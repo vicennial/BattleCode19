@@ -105,33 +105,41 @@ class MyRobot extends BCAbstractRobot {
                     .filter(robot => robot.team === this.me.team && robot.unit === SPECS.CASTLE)[0];
             }
 
-            // if we don't have a destination, figure out what it is.
-            if (!this.destination) {
-                this.destination = nav.getClosestKarbonite(this.me, this.getKarboniteMap());
-            }
+            // // if we don't have a destination, figure out what it is.
+            // if (!this.destination) {
+            //     this.destination = nav.getClosestKarbonite(this.me, this.getKarboniteMap());
+            // }
 
-            // If we're near our destination, do the thing
-            if (this.me.karbonite === 20) {
-                this.destination = this.castle;
-                if (nav.sqDist(this.me, this.destination) <= 2) {
-                    this.destination = nav.getClosestKarbonite(this.me, this.getKarboniteMap());
-                    return this.give(
-                        this.castle.x - this.me.x,
-                        this.castle.y - this.me.y,
-                        this.me.karbonite,
-                        this.me.fuel);
-                }
-            } else {
-                if (nav.sqDist(this.me, this.destination) === 0) {
-                    return this.mine();
-                }
+            // // If we're near our destination, do the thing
+            // if (this.me.karbonite === 20) {
+            //     this.destination = this.castle;
+            //     if (nav.sqDist(this.me, this.destination) <= 2) {
+            //         this.destination = nav.getClosestKarbonite(this.me, this.getKarboniteMap());
+            //         return this.give(
+            //             this.castle.x - this.me.x,
+            //             this.castle.y - this.me.y,
+            //             this.me.karbonite,
+            //             this.me.fuel);
+            //     }
+            // } else {
+            //     if (nav.sqDist(this.me, this.destination) === 0) {
+            //         return this.mine();
+            //     }
+            // }
+            this.destination={
+                x:42,
+                y:14,
+            };
+            if(this.destination == this.me){
+                this.destination.x+=1;
             }
             // If we have nothing else to do, move to our destination.
+            this.log(this.me.x + ' '+this.me.y + ' ' +this.destination.x+ ' ' +this.destination.y);
             const choice = nav.goto(
                 this.me,
                 this.destination,
                 this.map,
-                this.getPassableMap(),
+                // this.getPassableMap(),
                 this.getVisibleRobotMap());
 
             return this.move(choice.x, choice.y);
@@ -164,10 +172,12 @@ class MyRobot extends BCAbstractRobot {
                 }
             }
 
-            if (!this.hasBuiltPilgrim && this.karbonite >= 100) {
-                this.log('Building a pilgrim at ' + (this.me.x + 1) + ',' + (this.me.y + 1));
+            if (this.karbonite >= 30) {
+                let dx =step%3-1;
+                let dy =(step*dx)%3-1;
+                this.log('Building a pilgrim at ' + (this.me.x + dx) + ',' + (this.me.y + dy));
                 this.hasBuiltPilgrim = true;
-                return this.buildUnit(SPECS.PILGRIM, 1, 0);
+                return this.buildUnit(SPECS.PILGRIM, dx, dy);
             }
 
             if (this.karbonite > 200) {

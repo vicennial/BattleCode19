@@ -89,7 +89,8 @@ nav.isPassable = (loc, fullMap, robotMap) => {
         return false;
     } else if (y >= mapLen || y < 0) {
         return false;
-    } else if (robotMap[y][x] > 0 || !fullMap[y][x]) {
+    } else if (robotMap[y][x] >0 ||  !fullMap[y][x]) {
+        if(!fullMap[y][x]) return false;
         return false;
     } else {
         return true;
@@ -109,73 +110,90 @@ function create2DArray(numRows, numColumns) {
     for (let i = 0; i < numColumns; i++) {
         array[i] = new Array(numColumns);
     }
-
+    for (let i = 0; i < numColumns; i++) {
+        for(let j=0; j<numRows; j++){
+            array[i][j]=0;
+        }
+    }
     return array;
 }
 nav.bfsdir = (loc, destination, fullMap, robotMap) => {
     const maplen= fullMap.length;
     var queue = [];
     queue.pop = queue.shift;
-    let visited = create2DArray(65,65);
+    let visited = create2DArray(maplen,maplen);
     queue.push(destination);
     visited[destination.x][destination.y] = true;
+    let message= "ERROR BOOIII:\n" + "TARGET: "+ loc.x +" " +loc.y + "\n";
+    message+= destination.x + " " + destination.y +"\n";
+    // throw message;
     while(queue.length){
-        let node = queue.pop();
+        // throw "ql"+queue.length;
+        let node = queue.shift();
         for(let i = -1; i <= 1; i++){
             for(let j = -1 ; j <= 1; j++){
+                // throw node.x;
                 let a = node.x + i;
                 let b = node.y + j;
-                if (a<0 || a>=maplen || b<0 || b>=maplen || robotMap[b][a] > 0 || !fullMap[b][a] || visited[b][a]){
-                    continue;
-                }
-                if(a==loc.a && b==loc.b){
-                    return node;
-                }
-                visited[a][b] = 1;
-                const temp = {
+                let pos={
                     x: a,
                     y: b,
                 };
-                queue.push(temp);
+                        if( b== loc.y){
+                            if(a == loc.x){
+                                // throw new Error();
+                                return node;
+                                
+                            }
+                        }
+                if (!nav.isPassable(pos,fullMap,robotMap) || visited[a][b]){
+                    continue;
+                }
+                message+=a + " " + b +"\n";
+                queue.push(pos);
+                visited[a][b] = 1;
             }
         }
         
     }
+    // throw new Error();
     const temp = {
         x: -1,
         y: -1,
     };
     return temp;
 }
+nav.goto = (loc, destination, fullMap, robotMap) => {
+    // throw robotMap[0][0];
+    let goalDir = nav.getDir(loc, destination);
+    if (goalDir.x === 0 && goalDir.y === 0) {
+        return goalDir;
+    }
+    let nextloc = nav.bfsdir(loc,destination,fullMap,robotMap);
+    // throw "Position:" + loc.x + " " + loc.y +"\n" +"Nextloc:" + nextloc.x + " " +nextloc.y + "\n";
+    if(nextloc.x===-1){
+        goalDir = nav.getDir(loc, destination);
+        let tryDir = 0;
+        while (!nav.isPassable(nav.applyDir(loc, goalDir), fullMap, robotMap) && tryDir < 8) {
+            goalDir = nav.rotate(goalDir, 1);
+            tryDir++;
+        }
+        return goalDir;
+    }
+    return nav.getDir(loc,nextloc,fullMap,robotMap);
+};
 // nav.goto = (loc, destination, fullMap, robotMap) => {
 //     let goalDir = nav.getDir(loc, destination);
 //     if (goalDir.x === 0 && goalDir.y === 0) {
 //         return goalDir;
 //     }
-//     let nextloc = nav.bfsdir(loc,destination,fullMap,robotMap);
-//     if(nextloc.x==-1){
-//         goalDir = nav.getDir(loc, destination);
-//         let tryDir = 0;
-//         while (!nav.isPassable(nav.applyDir(loc, goalDir), fullMap, robotMap) && tryDir < 8) {
-//             goalDir = nav.rotate(goalDir, 1);
-//             tryDir++;
-//         }
-//         return goalDir;
+//     let tryDir = 0;
+//     while (!nav.isPassable(nav.applyDir(loc, goalDir), fullMap, robotMap) && tryDir < 8) {
+//         goalDir = nav.rotate(goalDir, 1);
+//         tryDir++;
 //     }
 //     return goalDir;
 // };
-nav.goto = (loc, destination, fullMap, robotMap) => {
-    let goalDir = nav.getDir(loc, destination);
-    if (goalDir.x === 0 && goalDir.y === 0) {
-        return goalDir;
-    }
-    let tryDir = 0;
-    while (!nav.isPassable(nav.applyDir(loc, goalDir), fullMap, robotMap) && tryDir < 8) {
-        goalDir = nav.rotate(goalDir, 1);
-        tryDir++;
-    }
-    return goalDir;
-};
 nav.sqDist = (start, end) => {
     return Math.pow(start.x - end.x, 2) + Math.pow(start.y - end.y, 2);
 };
