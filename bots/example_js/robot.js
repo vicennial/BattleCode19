@@ -1,4 +1,4 @@
-import {BCAbstractRobot, SPECS} from 'battlecode';
+import { BCAbstractRobot, SPECS } from 'battlecode';
 import nav from './nav.js';
 
 let step = -1;
@@ -19,20 +19,20 @@ class MyRobot extends BCAbstractRobot {
             this.log('health: ' + this.me.health);
 
             var visible = this.getVisibleRobots();
-            
+
             // this sucks I'm sorry...
             // This is actually fine. Or use .bind()
             var self = this; // 'this' fails to properly identify MyRobot when used inside of anonymous function below :(
 
             // get attackable robots
             var attackable = visible.filter((r) => {
-                if (! self.isVisible(r)){
+                if (!self.isVisible(r)) {
                     return false;
                 }
-                const dist = (r.x-self.me.x)**2 + (r.y-self.me.y)**2;
+                const dist = (r.x - self.me.x) ** 2 + (r.y - self.me.y) ** 2;
                 if (r.team !== self.me.team
                     && SPECS.UNITS[this.me.unit].ATTACK_RADIUS[0] <= dist
-                    && dist <= SPECS.UNITS[this.me.unit].ATTACK_RADIUS[1] ){
+                    && dist <= SPECS.UNITS[this.me.unit].ATTACK_RADIUS[1]) {
                     return true;
                 }
                 return false;
@@ -62,8 +62,8 @@ class MyRobot extends BCAbstractRobot {
 
 
 
-            if(!this.pendingMessage) {
-                for(let i = 0; i < visible.length; i++ ) {
+            if (!this.pendingMessage) {
+                for (let i = 0; i < visible.length; i++) {
                     const robot = visible[i];
                     if (robot.team !== this.me.team && robot.unit === SPECS.CASTLE && this.enemyCastles.indexOf(robot.x * 64 + robot.y) < 0) {
                         this.log('ENEMY CASTLE FOUND!');
@@ -79,10 +79,10 @@ class MyRobot extends BCAbstractRobot {
 
             this.log(attackable);
 
-            if (attackable.length>0){
+            if (attackable.length > 0) {
                 // attack first robot
                 var r = attackable[0];
-                this.log('' +r);
+                this.log('' + r);
                 this.log('attacking! ' + r + ' at loc ' + (r.x - this.me.x, r.y - this.me.y));
                 return this.attack(r.x - this.me.x, r.y - this.me.y);
             }
@@ -92,10 +92,10 @@ class MyRobot extends BCAbstractRobot {
             }
 
             const choice = nav.goto(
-                this.me, 
+                this.me,
                 this.destination,
-                this.map, 
-                this.getPassableMap(), 
+                this.map,
+                this.getPassableMap(),
                 this.getVisibleRobotMap());
             return this.move(choice.x, choice.y);
         } else if (this.me.unit === SPECS.PILGRIM) {
@@ -128,10 +128,10 @@ class MyRobot extends BCAbstractRobot {
             }
             // If we have nothing else to do, move to our destination.
             const choice = nav.goto(
-                this.me, 
+                this.me,
                 this.destination,
-                this.map, 
-                this.getPassableMap(), 
+                this.map,
+                this.getPassableMap(),
                 this.getVisibleRobotMap());
 
             return this.move(choice.x, choice.y);
@@ -158,17 +158,17 @@ class MyRobot extends BCAbstractRobot {
 
             if (step % 100) {
                 // this.log('KNOWN ENEMY CASTLES: ');
-                for(let i = 0; i < this.enemyCastles.length; i++) {
-                    const {x,y} = this.enemyCastles[i];
+                for (let i = 0; i < this.enemyCastles.length; i++) {
+                    const { x, y } = this.enemyCastles[i];
                     this.log(x + ',' + y);
                 }
             }
 
             if (!this.hasBuiltPilgrim && this.karbonite >= 100) {
-                this.log('Building a pilgrim at ' + (this.me.x+1) + ',' + (this.me.y+1));
+                this.log('Building a pilgrim at ' + (this.me.x + 1) + ',' + (this.me.y + 1));
                 this.hasBuiltPilgrim = true;
                 return this.buildUnit(SPECS.PILGRIM, 1, 0);
-            } 
+            }
 
             if (this.karbonite > 200) {
                 // const unitEnum = Math.floor(Math.random() * 3);
