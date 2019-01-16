@@ -99,7 +99,7 @@ class MyRobot extends BCAbstractRobot {
 
     }
 
-    attack(){
+    attack1(){
         // choose random coordinates
         var target_x = 0
         var target_y = 0
@@ -115,53 +115,54 @@ class MyRobot extends BCAbstractRobot {
         this.log("I am going here: " + target_x + " " + target_y)
 
         // see if something can be attacked from current location
-        // var visible = this.getVisibleRobots()
-        // var self = this
-        // var attackable = visible.filter((r) => {
-        //     if (!self.isVisible(r)) {
-        //         return false;
-        //     }
-        //     const dist = (r.x - self.me.x) ** 2 + (r.y - self.me.y) ** 2;
-        //     if (r.team !== self.me.team
-        //         && SPECS.UNITS[this.me.unit].ATTACK_RADIUS[0] <= dist
-        //         && dist <= SPECS.UNITS[this.me.unit].ATTACK_RADIUS[1]) {
-        //         return true;
-        //     }
-        //     return false;
-        // });
+        var visible = this.getVisibleRobots()
+        var self = this
+        var attackable = visible.filter((r) => {
+            if (!self.isVisible(r)) {
+                return false;
+            }
+            const dist = (r.x - self.me.x) ** 2 + (r.y - self.me.y) ** 2;
+            if (r.team !== self.me.team
+                && SPECS.UNITS[this.me.unit].ATTACK_RADIUS[0] <= dist
+                && dist <= SPECS.UNITS[this.me.unit].ATTACK_RADIUS[1]) {
+                return true;
+            }
+            return false;
+        });
 
-        // const attacking = visible.filter((r) => {
-        //     if (r.team === this.me.team) {
-        //         return false;
-        //     }
+        const attacking = visible.filter((r) => {
+            if (r.team === this.me.team) {
+                return false;
+            }
 
-        //     if (nav.sqDist(r, this.me) <= SPECS.UNITS[this.me.unit].ATTACK_RADIUS[0]) {
-        //         return true;
-        //     } else {
-        //         return false;
-        //     }
-        // });
+            if (nav.sqDist(r, this.me) <= SPECS.UNITS[this.me.unit].ATTACK_RADIUS[0]) {
+                return true;
+            } else {
+                return false;
+            }
+        });
 
-        // if (attacking.length > 0) {
-        //     this.log("getting attacked!")
-        //     const attacker = attacking[0];
-        //     const dir = nav.getDir(this.me, attacker);
-        //     const otherDir = {
-        //         x: -dir.x,
-        //         y: -dir.y,
-        //     };
-        //     return this.move(otherDir.x, otherDir.y);
-        // }
-
-        // if (attackable.length > 0) {
-        //     this.log("attacking")
-        //     // attack first robot
-        //     var r = attackable[0];
-        //     this.log('' + r);
-        //     this.log('attacking! ' + r + ' at loc ' + (r.x - this.me.x, r.y - this.me.y));
-        //     return this.attack(r.x - this.me.x, r.y - this.me.y);
-        // }
-        this.destination = {x:36, y:29,}
+        if (attacking.length > 0) {
+            this.log("getting attacked!")
+            const attacker = attacking[0];
+            const dir = nav.getDir(this.me, attacker);
+            const otherDir = {
+                x: -dir.x,
+                y: -dir.y,
+            };
+            return this.move(otherDir.x, otherDir.y);
+        }
+        this.log(attackable);
+        if (attackable.length > 0) {
+            this.log("attacking")
+            // attack first robot
+            var r = attackable[0];
+            this.log(r);
+            // throw new Error();
+            this.log('attacking! ' + r + ' at loc ' + (r.x - this.me.x, r.y - this.me.y));
+            return this.attack(r.x - this.me.x, r.y - this.me.y);
+        }
+        this.destination = {x:target_x, y:target_y,}
         const choice = nav.goto(
             this.me,
             this.destination,
@@ -178,15 +179,8 @@ class MyRobot extends BCAbstractRobot {
         this.getMyResourceCoordinateList()
         this.log("RESOURCE LIST --- " + this.resourceCoordinateList)
         if (this.me.unit === SPECS.PROPHET) {
-            this.log("WADDUP NIGGGAS/1" + this.me.x+ " "+ this.me.y);
-            this.destination = {x:36, y:29,}
-            const choice = nav.goto(
-                this.me,
-                this.destination,
-                this.map,
-                // this.getPassableMap(),
-                this.getVisibleRobotMap());
-            return this.move(choice.x, choice.y)
+            this.log("PROF");
+            return this.attack1();
         } else if (this.me.unit === SPECS.PILGRIM) {
             //
             // On the first turn, find out our base
@@ -445,10 +439,10 @@ class MyRobot extends BCAbstractRobot {
 
         }
         else if(this.me.unit === SPECS.CRUSADER){
-            this.attack();
+            return this.attack1();
         }
         else{
-            this.attack();
+            return this.attack1();
         }
 
     }
