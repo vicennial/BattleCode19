@@ -195,23 +195,39 @@ nav.goto = (loc, destination, fullMap, robotMap) => {
 //     return goalDir;
 // };
 nav.sqDist = (start, end) => {
+    // throw "BOIIIIII :"+ start +" "+end;
     return Math.pow(start.x - end.x, 2) + Math.pow(start.y - end.y, 2);
+    // throw "asdfs";
 };
 
-nav.getClosestKarbonite = (loc, karbMap) => {
+// nav.getClosestKarbonite = (loc, karbMap) => {
+//     const mapLen = karbMap.length;
+//     let closestLoc = null;
+//     let closestDist = 100000; // Large number;
+//     for (let y = 0; y < mapLen; y++) {
+//         for (let x = 0; x < mapLen; x++) {
+//             if (karbMap[y][x] && nav.sqDist({x,y}, loc) < closestDist) {
+//                 closestDist = nav.sqDist({x,y}, loc);
+//                 closestLoc = {x,y};
+//             }
+//         }
+//     }
+//     return closestLoc;
+// };
+
+nav.getRandomResourceCoordinates = (fuelMap, karbMap) =>{
     const mapLen = karbMap.length;
-    let closestLoc = null;
-    let closestDist = 100000; // Large number;
+    let arr = [];
     for (let y = 0; y < mapLen; y++) {
         for (let x = 0; x < mapLen; x++) {
-            if (karbMap[y][x] && nav.sqDist({x,y}, loc) < closestDist) {
-                closestDist = nav.sqDist({x,y}, loc);
-                closestLoc = {x,y};
+            if (karbMap[y][x] || fuelMap[y][x]){
+                arr.push({x,y});
             }
         }
     }
-    return closestLoc;
-};
-
+    const randnum = Math.floor(Math.random() * arr.length);
+    // throw "Random val" +randnum + "Length:" +arr.length +" " + arr[randnum].x + " " +arr[randnum].y;
+    return arr[randnum];        
+}
 export default nav;
 

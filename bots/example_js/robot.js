@@ -185,6 +185,7 @@ class MyRobot extends BCAbstractRobot {
                 this.getVisibleRobotMap());
             return this.move(choice.x, choice.y);
         } else if (this.me.unit === SPECS.PILGRIM) {
+            //
             // On the first turn, find out our base
             if (!this.castle) {
                 this.castle = this.getVisibleRobots()
@@ -212,13 +213,60 @@ class MyRobot extends BCAbstractRobot {
             //         return this.mine();
             //     }
             // }
-            this.destination={
-                x:42,
-                y:14,
-            };
-            // throw this.destination;
-            if(this.destination == this.me){
-                this.destination.x+=1;
+            if (!this.isResourceCoordinatesListGenerated){
+                //generate resources
+                this.isResourceCoordinatesListGenerated=1;
+            }
+            // this.destination={
+            //     x:42,
+            //     y:14,
+            // };
+            let getRandDestination = () =>{
+                let temp = nav.getRandomResourceCoordinates(this.fuel_map, this.karbonite_map);
+                return temp;
+            }
+            this.log("Robot id lmao:"+this.me.id+" "+this.pilgrimResourceAssigned);
+            if(!this.pilgrimResourceAssigned){
+                // assign it to random location
+                this.pilgrimResourceAssigned=1;
+                this.destination = getRandDestination();
+                this.log("Pilgram assigned mine location" +this.destination.x + " "+this.destination.y);
+                // throw "lbuhbue";
+            }
+            //stop mining logic
+            if(this.me.fuel >=100 || this.me.karbonite>=20){
+                this.returning=1;
+                this.destination=this.castle;
+            }
+            //return logic
+            if(this.returning){
+                if (nav.sqDist(this.me, this.destination) <= 2) {
+                    this.returning=0;
+                    this.destination= getRandDestination();
+                    return this.give(
+                        this.castle.x - this.me.x,
+                        this.castle.y - this.me.y,
+                        this.me.karbonite,
+                        this.me.fuel);
+                }
+            }
+            else{
+                //assign random locations if current location is getting mined
+                let maxtry = 50;
+                while(maxtry > 0){
+                    --maxtry;
+                    if(nav.sqDist(this.me,this.destination) != 1) break;
+                    let visMap = this.getVisibleRobotMap();
+                    if(visMap[this.destination.y][this.destination.x] == 0){
+                        break;
+                    }
+                    this.destination= getRandDestination();  
+                }
+                //mine if at location
+                if(nav.sqDist(this.me,this.destination) === 0){
+                    return this.mine();
+                }
+
             }
             // If we have nothing else to do, move to our destination.
             this.log(this.me.x + ' '+this.me.y + ' ' +this.destination.x+ ' ' +this.destination.y);
@@ -343,6 +391,8 @@ class MyRobot extends BCAbstractRobot {
             let checkProphet = this.buildBotProbability[0] + this.buildBotProbability[1] + this.buildBotProbability[2]
             let checkPreacher = this.buildBotProbability[0] + this.buildBotProbability[1] + this.buildBotProbability[2] + this.buildBotProbability[3]
 
+            // CHANGE....
+            checkPilgrim=1;
             this.log("token is " + token + ' ' + checkPilgrim + ' ' + checkPreacher)
             this.log("KARBONITE = " + this.karbonite)
             this.log("fuel = " + this.fuel)
