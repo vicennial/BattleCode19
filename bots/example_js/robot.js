@@ -12,6 +12,82 @@ class MyRobot extends BCAbstractRobot {
         // 
         this.buildBotProbability = [0.1, 0.2, 0.3, 0.4]
         this.availableBuildLocations = []
+
+        this.mapSymmetryType = -1 // 1 -> horizontal symmetry (X), 2 -> vertical (Y)
+        this.resourceCoordinateList = [] // [[x, y, type = 0 if fuel, 1 if karbonite]....]
+
+        this.myEnemyCastle = [] // X, Y
+
+    }
+
+    getMyResourceCoordinateList(){
+        if(this.resourceCoordinateList.length > 0){
+            return
+        }
+        this.log("Getting Coordinate List")
+        if(this.mapSymmetryType === -1){
+            this.getMapSymmetry();
+        }
+        if(this.mapSymmetryType === 1){
+            // symmetry along x
+            // identify which side our territory is
+            var offset = 0
+            var len_y = this.map.length
+            var len_x = this.map[0].length
+            if(this.me.x > len_x/2){
+                offset = len_x/2;
+            }
+            for(let cy = 0; cy < len_y; ++cy){
+                for(let cx = offset; cx < offset+len_x/2; ++cx){
+                    if(this.fuel_map[cy][cx] === true){
+                        this.resourceCoordinateList.push([cx, cy, 0])
+                    }
+                    if(this.karbonite_map[cy][cx] === true){
+                        this.resourceCoordinateList.push([cx, cy, 1])
+                    }
+                }
+            }
+        }
+        else{
+            // symmetry along y
+            // identify which side our territory is
+            var offset = 0
+            var len_y = this.map.length
+            var len_x = this.map[0].length
+            if(this.me.y > len_y/2){
+                offset = len_y/2;
+            }
+            for(let cy = offset; cy < offset+len_y/2; ++cy){
+                for(let cx = 0; cx < len_x; ++cx){
+                    if(this.fuel_map[cy][cx] == true){
+                        this.resourceCoordinateList.push([cx, cy, 0])
+                    }
+                    if(this.karbonite_map[cy][cx] == true){
+                        this.resourceCoordinateList.push([cx, cy, 1])
+                    }
+                }
+            }
+        }
+    }
+
+    getMapSymmetry(){
+        this.log("Getting map symmetry")
+        const len_y = this.map.length
+        const len_x = this.map[0].length
+        
+        // check for symmetry along x axis
+        for(let cy = 0; cy < len_y; ++cy){
+            for(let cx = 0; cx < len_x; ++cx){
+                if(this.map[cy][cx] !== this.map[cy][len_x-1-cx]){
+                    this.mapSymmetryType = 2
+                    // if not symmetric in x, it must be in y
+                }
+            }
+        }
+        if(this.mapSymmetryType === -1){
+            this.mapSymmetryType = 1
+            // if symmetric in x, then set accordingly
+        }
     }
 
     updateBuildProbability() {
@@ -21,7 +97,9 @@ class MyRobot extends BCAbstractRobot {
 
     turn() {
         step++;
-
+        this.log("symmetry type is: " + this.mapSymmetryType)
+        this.getMyResourceCoordinateList()
+        this.log("RESOURCE LIST --- " + this.resourceCoordinateList)
         if (this.me.unit === SPECS.PROPHET) {
             this.log('START TURN ' + step);
             this.log('health: ' + this.me.health);
@@ -155,6 +233,25 @@ class MyRobot extends BCAbstractRobot {
         }
 
         else if (this.me.unit === SPECS.CASTLE) {
+
+            // find the type of symmetry in step 0
+            
+            
+            if(step === 0){
+                this.getMapSymmetry()
+                if(this.mapSymmetryType === 1){
+                    // symmetry along x
+                    var len_x = this.map[0].length
+                    this.myEnemyCastle = [len_x-1-this.me.x, this.me.y]
+                }
+                else{
+                    // symmetry along y
+                    var len_y = this.map.length
+                    this.myEnemyCastle = [this.me.x, len_y-1-this.me.y]
+                }
+            }
+
+
             const visible = this.getVisibleRobots();
             const messagingRobots = visible.filter(robot => {
                 return robot.castle_talk;
@@ -174,13 +271,13 @@ class MyRobot extends BCAbstractRobot {
             }
 
             // logs known enemy castles every 100th step 
-            if (step % 100) {
-                this.log('KNOWN ENEMY CASTLES: ');
-                for (let i = 0; i < this.enemyCastles.length; i++) {
-                    const { x, y } = this.enemyCastles[i];
-                    this.log(x + ',' + y);
-                }
-            }
+            // if (step % 100) {
+            //     this.log('KNOWN ENEMY CASTLES: ');
+            //     for (let i = 0; i < this.enemyCastles.length; i++) {
+            //         const { x, y } = this.enemyCastles[i];
+            //         this.log(x + ',' + y);
+            //     }
+            // }
 
             const probabilityUpdateRequired = false
             //
@@ -188,7 +285,7 @@ class MyRobot extends BCAbstractRobot {
             //
 
             if (probabilityUpdateRequired) {
-                updateBuildProbability()
+                this.updateBuildProbability()
             }
             // castle coordinates
             const loc_x = this.me.x
