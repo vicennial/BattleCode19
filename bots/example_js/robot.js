@@ -10,13 +10,17 @@ class MyRobot extends BCAbstractRobot {
         this.pendingRecievedMessages = {};
         this.enemyCastles = [];
         // 
-        this.buildBotProbability = [0.1, 0.2, 0.3, 0.4]
+        this.buildBotProbability = [0.4, 0.2, 0.3, 0.1]
         this.availableBuildLocations = []
 
         this.mapSymmetryType = -1 // 1 -> horizontal symmetry (X), 2 -> vertical (Y)
         this.resourceCoordinateList = [] // [[x, y, type = 0 if fuel, 1 if karbonite]....]
 
         this.myEnemyCastle = [] // X, Y
+
+        this.attackStatusFlag = -1
+
+        this.random_move = [0, 0]
 
     }
 
@@ -95,95 +99,94 @@ class MyRobot extends BCAbstractRobot {
 
     }
 
+    attack(){
+        // choose random coordinates
+        var target_x = 0
+        var target_y = 0
+        // while(1){
+            target_x = Math.floor(Math.random() * this.map.length)
+            target_y = Math.floor(Math.random() * this.map.length)
+            this.random_move = [target_x, target_y]
+            // if(this.map[target_y][target_x] === 0){
+            //     break;
+            // }
+        // }
+        this.log("I am here: " + this.me.x + " " + this.me.y)
+        this.log("I am going here: " + target_x + " " + target_y)
+
+        // see if something can be attacked from current location
+        // var visible = this.getVisibleRobots()
+        // var self = this
+        // var attackable = visible.filter((r) => {
+        //     if (!self.isVisible(r)) {
+        //         return false;
+        //     }
+        //     const dist = (r.x - self.me.x) ** 2 + (r.y - self.me.y) ** 2;
+        //     if (r.team !== self.me.team
+        //         && SPECS.UNITS[this.me.unit].ATTACK_RADIUS[0] <= dist
+        //         && dist <= SPECS.UNITS[this.me.unit].ATTACK_RADIUS[1]) {
+        //         return true;
+        //     }
+        //     return false;
+        // });
+
+        // const attacking = visible.filter((r) => {
+        //     if (r.team === this.me.team) {
+        //         return false;
+        //     }
+
+        //     if (nav.sqDist(r, this.me) <= SPECS.UNITS[this.me.unit].ATTACK_RADIUS[0]) {
+        //         return true;
+        //     } else {
+        //         return false;
+        //     }
+        // });
+
+        // if (attacking.length > 0) {
+        //     this.log("getting attacked!")
+        //     const attacker = attacking[0];
+        //     const dir = nav.getDir(this.me, attacker);
+        //     const otherDir = {
+        //         x: -dir.x,
+        //         y: -dir.y,
+        //     };
+        //     return this.move(otherDir.x, otherDir.y);
+        // }
+
+        // if (attackable.length > 0) {
+        //     this.log("attacking")
+        //     // attack first robot
+        //     var r = attackable[0];
+        //     this.log('' + r);
+        //     this.log('attacking! ' + r + ' at loc ' + (r.x - this.me.x, r.y - this.me.y));
+        //     return this.attack(r.x - this.me.x, r.y - this.me.y);
+        // }
+        this.destination = {x:36, y:29,}
+        const choice = nav.goto(
+            this.me,
+            this.destination,
+            this.map,
+            // this.getPassableMap(),
+            this.getVisibleRobotMap());
+        return this.move(choice.x, choice.y)
+    }
+
+
     turn() {
         step++;
         this.log("symmetry type is: " + this.mapSymmetryType)
         this.getMyResourceCoordinateList()
         this.log("RESOURCE LIST --- " + this.resourceCoordinateList)
         if (this.me.unit === SPECS.PROPHET) {
-            this.log('START TURN ' + step);
-            this.log('health: ' + this.me.health);
-
-            var visible = this.getVisibleRobots();
-
-            // this sucks I'm sorry...
-            // This is actually fine. Or use .bind()
-            var self = this; // 'this' fails to properly identify MyRobot when used inside of anonymous function below :(
-
-            // get attackable robots
-            var attackable = visible.filter((r) => {
-                if (!self.isVisible(r)) {
-                    return false;
-                }
-                const dist = (r.x - self.me.x) ** 2 + (r.y - self.me.y) ** 2;
-                if (r.team !== self.me.team
-                    && SPECS.UNITS[this.me.unit].ATTACK_RADIUS[0] <= dist
-                    && dist <= SPECS.UNITS[this.me.unit].ATTACK_RADIUS[1]) {
-                    return true;
-                }
-                return false;
-            });
-
-            const attacking = visible.filter(r => {
-                if (r.team === this.me.team) {
-                    return false;
-                }
-
-                if (nav.sqDist(r, this.me) <= SPECS.UNITS[this.me.unit].ATTACK_RADIUS[0]) {
-                    return true;
-                } else {
-                    return false;
-                }
-            });
-
-            if (attacking.length > 0) {
-                const attacker = attacking[0];
-                const dir = nav.getDir(this.me, attacker);
-                const otherDir = {
-                    x: -dir.x,
-                    y: -dir.y,
-                };
-                return this.move(otherDir.x, otherDir.y);
-            }
-
-
-
-            if (!this.pendingMessage) {
-                for (let i = 0; i < visible.length; i++) {
-                    const robot = visible[i];
-                    if (robot.team !== this.me.team && robot.unit === SPECS.CASTLE && this.enemyCastles.indexOf(robot.x * 64 + robot.y) < 0) {
-                        this.log('ENEMY CASTLE FOUND!');
-                        this.pendingMessage = robot.y;
-                        this.castleTalk(robot.x);
-                        this.enemyCastles.push(robot.x * 64 + robot.y);
-                    }
-                }
-            } else {
-                this.castleTalk(this.pendingMessage);
-                this.pendingMessage = null;
-            }
-
-            this.log(attackable);
-
-            if (attackable.length > 0) {
-                // attack first robot
-                var r = attackable[0];
-                this.log('' + r);
-                this.log('attacking! ' + r + ' at loc ' + (r.x - this.me.x, r.y - this.me.y));
-                return this.attack(r.x - this.me.x, r.y - this.me.y);
-            }
-            // this.log("Crusader health: " + this.me.health);'
-            if (!this.destination) {
-                this.destination = nav.reflect(this.me, this.getPassableMap(), this.me.id % 2 === 0);
-            }
-
+            this.log("WADDUP NIGGGAS/1" + this.me.x+ " "+ this.me.y);
+            this.destination = {x:36, y:29,}
             const choice = nav.goto(
                 this.me,
                 this.destination,
                 this.map,
-                this.getPassableMap(),
+                // this.getPassableMap(),
                 this.getVisibleRobotMap());
-            return this.move(choice.x, choice.y);
+            return this.move(choice.x, choice.y)
         } else if (this.me.unit === SPECS.PILGRIM) {
             //
             // On the first turn, find out our base
@@ -392,7 +395,7 @@ class MyRobot extends BCAbstractRobot {
             let checkPreacher = this.buildBotProbability[0] + this.buildBotProbability[1] + this.buildBotProbability[2] + this.buildBotProbability[3]
 
             // CHANGE....
-            checkPilgrim=1;
+            // checkPilgrim=1;
             this.log("token is " + token + ' ' + checkPilgrim + ' ' + checkPreacher)
             this.log("KARBONITE = " + this.karbonite)
             this.log("fuel = " + this.fuel)
@@ -440,6 +443,12 @@ class MyRobot extends BCAbstractRobot {
                 }
             }
 
+        }
+        else if(this.me.unit === SPECS.CRUSADER){
+            this.attack();
+        }
+        else{
+            this.attack();
         }
 
     }
