@@ -213,16 +213,16 @@ class MyRobot extends BCAbstractRobot {
             //         return this.mine();
             //     }
             // }
-            if (!this.isResourceCoordinatesListGenerated){
-                //generate resources
-                this.isResourceCoordinatesListGenerated=1;
+            if (this.getMapSymmetry==-1){
+                this.getMapSymmetry();
+                this.getMyResourceCoordinateList();
             }
             // this.destination={
             //     x:42,
             //     y:14,
             // };
             let getRandDestination = () =>{
-                let temp = nav.getRandomResourceCoordinates(this.fuel_map, this.karbonite_map);
+                let temp = nav.getRandomResourceCoordinates(this.resourceCoordinateList);
                 return temp;
             }
             this.log("Robot id lmao:"+this.me.id+" "+this.pilgrimResourceAssigned);

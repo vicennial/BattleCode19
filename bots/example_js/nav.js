@@ -215,19 +215,15 @@ nav.sqDist = (start, end) => {
 //     return closestLoc;
 // };
 
-nav.getRandomResourceCoordinates = (fuelMap, karbMap) =>{
-    const mapLen = karbMap.length;
-    let arr = [];
-    for (let y = 0; y < mapLen; y++) {
-        for (let x = 0; x < mapLen; x++) {
-            if (karbMap[y][x] || fuelMap[y][x]){
-                arr.push({x,y});
-            }
-        }
-    }
-    const randnum = Math.floor(Math.random() * arr.length);
+nav.getRandomResourceCoordinates = (resourceList) =>{
+
+    const randnum = Math.floor(Math.random() * resourceList.length);
     // throw "Random val" +randnum + "Length:" +arr.length +" " + arr[randnum].x + " " +arr[randnum].y;
-    return arr[randnum];        
+    let x=resourceList[randnum][0];
+    let y=resourceList[randnum][1];
+    let destination = {x,y};
+    // throw "asdadssa:"+destination.x +" "+ destination.y;
+    return destination;        
 }
 export default nav;
 
