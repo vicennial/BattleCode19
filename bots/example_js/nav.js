@@ -67,17 +67,17 @@ nav.getDir = (start, target) => {
         y: target.y - start.y,
     };
 
-    if (newDir.x < 0) {
-        newDir.x = -1;
-    } else if (newDir.x > 0) {
-        newDir.x = 1;
-    }
+    // if (newDir.x < 0) {
+    //     newDir.x = -1;
+    // } else if (newDir.x > 0) {
+    //     newDir.x = 1;
+    // }
 
-    if (newDir.y < 0) {
-        newDir.y = -1;
-    } else if (newDir.y > 0) {
-        newDir.y = 1;
-    }
+    // if (newDir.y < 0) {
+    //     newDir.y = -1;
+    // } else if (newDir.y > 0) {
+    //     newDir.y = 1;
+    // }
 
     return newDir;
 };
@@ -117,10 +117,10 @@ function create2DArray(numRows, numColumns) {
     return array;
 }
 nav.bfsdir = (loc, destination, fullMap, robotMap, radius) => {
-    const maplen= fullMap.length;
+    const mapLen= fullMap.length;
     var queue = [];
     queue.pop = queue.shift;
-    let visited = create2DArray(maplen,maplen);
+    let visited = create2DArray(mapLen,mapLen);
     queue.push(destination);
     visited[destination.x][destination.y] = true;
     // let message= "ERROR BOOIII:\n" + "TARGET: "+ loc.x +" " +loc.y + "\n";
@@ -140,10 +140,16 @@ nav.bfsdir = (loc, destination, fullMap, robotMap, radius) => {
                     y: b,
                 };
                 if( b== loc.y && a==loc.x){
-                    return node;
+                    let current={
+                        x: node.x,
+                        y: node.y,
+                    };  
+                    // this.log("inside bfsdir:"+node.x+" "+node.y);
+                    // throw "inside bfsdir:" + node.x + " " + node.y;
+                    return current;
                         
                 }
-                if (x >= mapLen || x < 0 || y >= mapLen || y < 0 || robotMap[y][x] > 0 || !fullMap[y][x] || visited[a][b]){
+                if (a >= mapLen || a < 0 || b >= mapLen || b < 0 || robotMap[b][a] > 0 || !fullMap[b][a] || visited[a][b]){
                     continue;
                 }
                 // message+=a + " " + b +"\n";
@@ -160,13 +166,13 @@ nav.bfsdir = (loc, destination, fullMap, robotMap, radius) => {
     };
     return temp;
 }
-nav.goto = (loc, destination, fullMap, robotMap) => {
+nav.goto = (loc, destination, fullMap, robotMap, radius) => {
     // throw robotMap[0][0];
     let goalDir = nav.getDir(loc, destination);
     if (goalDir.x === 0 && goalDir.y === 0) {
         return goalDir;
     }
-    let nextloc = nav.bfsdir(loc,destination,fullMap,robotMap);
+    let nextloc = nav.bfsdir(loc,destination,fullMap,robotMap,radius);
     // throw "Position:" + loc.x + " " + loc.y +"\n" +"Nextloc:" + nextloc.x + " " +nextloc.y + "\n";
     if(nextloc.x===-1){
         goalDir = nav.getDir(loc, destination);

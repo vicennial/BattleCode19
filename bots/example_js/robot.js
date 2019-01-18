@@ -23,7 +23,28 @@ class MyRobot extends BCAbstractRobot {
         this.random_move = [0, 0]
 
     }
-
+    getAdjacentEmpty(loc){
+        let robotMap=this.getVisibleRobotMap();
+        let fullMap=this.map;
+        let mapLen=this.map.length;
+        for (let i = -1; i <= 1; ++i) {
+            for (let j = -1; j <= 1; ++j) {
+                if (i === 0 && j === 0) {
+                    continue;
+                }
+                let a=loc.x+i;
+                let b=loc.y+j;
+                if (a >= mapLen || a < 0 || b >= mapLen || b < 0 || robotMap[b][a] > 0 || !fullMap[b][a]) continue;
+                    // availablePassableNeighbours.push([loc_x + i, loc_y + j])
+                    let pos={
+                        x:loc.x+i,
+                        y:loc.y+j,
+                    };
+                    return pos; 
+            }
+        }
+        return {x:0,y:0,};
+    }
     getMyResourceCoordinateList(){
         if(this.resourceCoordinateList.length > 0){
             return
@@ -168,7 +189,8 @@ class MyRobot extends BCAbstractRobot {
             this.destination,
             this.map,
             // this.getPassableMap(),
-            this.getVisibleRobotMap());
+            this.getVisibleRobotMap(),
+            SPECS["UNITS"][this.me.unit]["SPEED"]);
         return this.move(choice.x, choice.y)
     }
 
@@ -181,7 +203,7 @@ class MyRobot extends BCAbstractRobot {
         if (this.me.unit === SPECS.PROPHET) {
             this.log("PROF");
             return this.attack1();
-        } else if (this.me.unit === SPECS.PILGRIM) {
+        } else if (this.me.unit === SPECS.PILGRIM) { //PILGRIM
             //
             // On the first turn, find out our base
             if (!this.castle) {
@@ -233,7 +255,9 @@ class MyRobot extends BCAbstractRobot {
             //stop mining logic
             if(this.me.fuel >=100 || this.me.karbonite>=20){
                 this.returning=1;
-                this.destination=this.castle;
+                // this.destination=this.castle;
+                this.destination = this.getAdjacentEmpty(this.castle);
+
             }
             //return logic
             if(this.returning){
@@ -272,8 +296,10 @@ class MyRobot extends BCAbstractRobot {
                 this.destination,
                 this.map,
                 // this.getPassableMap(),
-                this.getVisibleRobotMap());
-
+                this.getVisibleRobotMap(),
+                SPECS["UNITS"][this.me.unit]["SPEED"]);
+            this.log("Square chosen:"+this.destination.x+this.destination.y);
+            this.log("Units moved:"+choice.x+" "+choice.y);
             return this.move(choice.x, choice.y);
         }
 
