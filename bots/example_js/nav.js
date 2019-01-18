@@ -67,17 +67,17 @@ nav.getDir = (start, target) => {
         y: target.y - start.y,
     };
 
-    if (newDir.x < 0) {
-        newDir.x = -1;
-    } else if (newDir.x > 0) {
-        newDir.x = 1;
-    }
+    // if (newDir.x < 0) {
+    //     newDir.x = -1;
+    // } else if (newDir.x > 0) {
+    //     newDir.x = 1;
+    // }
 
-    if (newDir.y < 0) {
-        newDir.y = -1;
-    } else if (newDir.y > 0) {
-        newDir.y = 1;
-    }
+    // if (newDir.y < 0) {
+    //     newDir.y = -1;
+    // } else if (newDir.y > 0) {
+    //     newDir.y = 1;
+    // }
 
     return newDir;
 };
@@ -90,7 +90,6 @@ nav.isPassable = (loc, fullMap, robotMap) => {
     } else if (y >= mapLen || y < 0) {
         return false;
     } else if (robotMap[y][x] >0 ||  !fullMap[y][x]) {
-        if(!fullMap[y][x]) return false;
         return false;
     } else {
         return true;
@@ -117,39 +116,43 @@ function create2DArray(numRows, numColumns) {
     }
     return array;
 }
-nav.bfsdir = (loc, destination, fullMap, robotMap) => {
-    const maplen= fullMap.length;
+nav.bfsdir = (loc, destination, fullMap, robotMap, radius) => {
+    const mapLen= fullMap.length;
     var queue = [];
     queue.pop = queue.shift;
-    let visited = create2DArray(maplen,maplen);
+    let visited = create2DArray(mapLen,mapLen);
     queue.push(destination);
     visited[destination.x][destination.y] = true;
-    let message= "ERROR BOOIII:\n" + "TARGET: "+ loc.x +" " +loc.y + "\n";
-    message+= destination.x + " " + destination.y +"\n";
+    // let message= "ERROR BOOIII:\n" + "TARGET: "+ loc.x +" " +loc.y + "\n";
+    // message+= destination.x + " " + destination.y +"\n";
     // throw message;
     while(queue.length){
         // throw "ql"+queue.length;
         let node = queue.shift();
-        for(let i = -1; i <= 1; i++){
-            for(let j = -1 ; j <= 1; j++){
+        for(let i = -3; i <= 3; i++){
+            for(let j = -3 ; j <= 3; j++){
                 // throw node.x;
                 let a = node.x + i;
                 let b = node.y + j;
+                if(i*i + j*j > radius) continue;
                 let pos={
                     x: a,
                     y: b,
                 };
-                        if( b== loc.y){
-                            if(a == loc.x){
-                                // throw new Error();
-                                return node;
-                                
-                            }
-                        }
-                if (!nav.isPassable(pos,fullMap,robotMap) || visited[a][b]){
+                if( b== loc.y && a==loc.x){
+                    let current={
+                        x: node.x,
+                        y: node.y,
+                    };  
+                    // this.log("inside bfsdir:"+node.x+" "+node.y);
+                    // throw "inside bfsdir:" + node.x + " " + node.y;
+                    return current;
+                        
+                }
+                if (a >= mapLen || a < 0 || b >= mapLen || b < 0 || robotMap[b][a] > 0 || !fullMap[b][a] || visited[a][b]){
                     continue;
                 }
-                message+=a + " " + b +"\n";
+                // message+=a + " " + b +"\n";
                 queue.push(pos);
                 visited[a][b] = 1;
             }
@@ -163,13 +166,13 @@ nav.bfsdir = (loc, destination, fullMap, robotMap) => {
     };
     return temp;
 }
-nav.goto = (loc, destination, fullMap, robotMap) => {
+nav.goto = (loc, destination, fullMap, robotMap, radius) => {
     // throw robotMap[0][0];
     let goalDir = nav.getDir(loc, destination);
     if (goalDir.x === 0 && goalDir.y === 0) {
         return goalDir;
     }
-    let nextloc = nav.bfsdir(loc,destination,fullMap,robotMap);
+    let nextloc = nav.bfsdir(loc,destination,fullMap,robotMap,radius);
     // throw "Position:" + loc.x + " " + loc.y +"\n" +"Nextloc:" + nextloc.x + " " +nextloc.y + "\n";
     if(nextloc.x===-1){
         goalDir = nav.getDir(loc, destination);
