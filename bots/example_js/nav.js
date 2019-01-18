@@ -90,7 +90,6 @@ nav.isPassable = (loc, fullMap, robotMap) => {
     } else if (y >= mapLen || y < 0) {
         return false;
     } else if (robotMap[y][x] >0 ||  !fullMap[y][x]) {
-        if(!fullMap[y][x]) return false;
         return false;
     } else {
         return true;
@@ -117,39 +116,37 @@ function create2DArray(numRows, numColumns) {
     }
     return array;
 }
-nav.bfsdir = (loc, destination, fullMap, robotMap) => {
+nav.bfsdir = (loc, destination, fullMap, robotMap, radius) => {
     const maplen= fullMap.length;
     var queue = [];
     queue.pop = queue.shift;
     let visited = create2DArray(maplen,maplen);
     queue.push(destination);
     visited[destination.x][destination.y] = true;
-    let message= "ERROR BOOIII:\n" + "TARGET: "+ loc.x +" " +loc.y + "\n";
-    message+= destination.x + " " + destination.y +"\n";
+    // let message= "ERROR BOOIII:\n" + "TARGET: "+ loc.x +" " +loc.y + "\n";
+    // message+= destination.x + " " + destination.y +"\n";
     // throw message;
     while(queue.length){
         // throw "ql"+queue.length;
         let node = queue.shift();
-        for(let i = -1; i <= 1; i++){
-            for(let j = -1 ; j <= 1; j++){
+        for(let i = -3; i <= 3; i++){
+            for(let j = -3 ; j <= 3; j++){
                 // throw node.x;
                 let a = node.x + i;
                 let b = node.y + j;
+                if(i*i + j*j > radius) continue;
                 let pos={
                     x: a,
                     y: b,
                 };
-                        if( b== loc.y){
-                            if(a == loc.x){
-                                // throw new Error();
-                                return node;
-                                
-                            }
-                        }
-                if (!nav.isPassable(pos,fullMap,robotMap) || visited[a][b]){
+                if( b== loc.y && a==loc.x){
+                    return node;
+                        
+                }
+                if (x >= mapLen || x < 0 || y >= mapLen || y < 0 || robotMap[y][x] > 0 || !fullMap[y][x] || visited[a][b]){
                     continue;
                 }
-                message+=a + " " + b +"\n";
+                // message+=a + " " + b +"\n";
                 queue.push(pos);
                 visited[a][b] = 1;
             }
