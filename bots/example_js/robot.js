@@ -23,6 +23,22 @@ class MyRobot extends BCAbstractRobot {
         this.random_move = [0, 0]
 
     }
+    decode(msg){
+        let decodedMsg ={
+            code:null,
+            x:null,
+            y:null
+        };
+        if(msg & 1){ //attack
+            decodedMsg.code = msg & 14;
+            decodedMsg.x = (msg >> 4) & 63;
+            decodedMsg.y = (msg >> (4+6)) & 63;
+        }
+        else{ // remaining
+            decodedMsg.code = msg;
+        }
+        return decodedMsg;
+    }
     getAdjacentEmpty(loc){
         let robotMap=this.getVisibleRobotMap();
         let fullMap=this.map;
