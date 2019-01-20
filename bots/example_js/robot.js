@@ -54,8 +54,9 @@ class MyRobot extends BCAbstractRobot {
             this.castle_talk(msg);
         } 
         else{
-            this.signla(msg,radius);
+            this.signal(msg,radius);
         }
+
     }
     getAdjacentEmpty(loc){
         let robotMap=this.getVisibleRobotMap();
