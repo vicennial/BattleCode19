@@ -39,6 +39,16 @@ class MyRobot extends BCAbstractRobot {
         }
         return decodedMsg;
     }
+
+    encodeMessage(opcode, x=-1, y=-1){
+        var msg = opcode << 1
+        if(x != -1 && y != -1){
+            msg |= 1
+            msg |= (x << 4)
+            msg |= (y << 10)
+        }
+        return msg
+    }
     getAdjacentEmpty(loc){
         let robotMap=this.getVisibleRobotMap();
         let fullMap=this.map;
@@ -212,6 +222,8 @@ class MyRobot extends BCAbstractRobot {
 
 
     turn() {
+        // msg = this.encodeMessage(4, 2, 3)
+        // this.log(msg)
         step++;
         this.log("symmetry type is: " + this.mapSymmetryType)
         this.getMyResourceCoordinateList()
