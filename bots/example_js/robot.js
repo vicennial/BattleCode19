@@ -139,10 +139,10 @@ class MyRobot extends BCAbstractRobot {
             }
             for(let cy = 0; cy < len_y; ++cy){
                 for(let cx = offset; cx < offset+len_x/2; ++cx){
-                    if(this.fuel_map[cy][cx] === true){
+                    if(this.fuel_map[cy][cx] == true){
                         this.resourceCoordinateList.push([cx, cy, 0])
                     }
-                    if(this.karbonite_map[cy][cx] === true){
+                    if(this.karbonite_map[cy][cx] == true){
                         this.resourceCoordinateList.push([cx, cy, 1])
                     }
                 }
@@ -353,12 +353,14 @@ class MyRobot extends BCAbstractRobot {
                 if (nav.sqDist(this.me, this.actualLoc) <= 2) {
                     this.returning=0;
                     let prevdest = this.actualLoc;
-                    if(this.actualLoc==this.castle)
-                    this.destination= getRandDestination();
+                    if(this.actualLoc==this.castle){
+                        this.destination= getRandDestination();
+                    }
                     else{
                         this.destination = nav.getClosestResourceCoordinate(this.me, this.getVisibleRobotMap(),this.resourceCoordinateList);
                     }
                     this.log("Giving all my resouces to:"+prevdest.x+" "+prevdest.y)
+                    this.log("New destination:"+this.destination.x+" "+this.destination.y);
                     return this.give(
                         prevdest.x - this.me.x,
                         prevdest.y - this.me.y,
@@ -371,17 +373,18 @@ class MyRobot extends BCAbstractRobot {
                 //assign random locations if current location is getting mined
                 let maxtry = 1;
                 while(maxtry > 0){
-                    this.log("Assigning new location to mine! Old locations:"+this.destination);
                     --maxtry;
                     if(nav.sqDist(this.me,this.destination) != 1) break;
                     let visMap = this.getVisibleRobotMap();
                     if(visMap[this.destination.y][this.destination.x] == 0){
                         break;
                     }
+                    this.log("Assigning new location to mine! Old locations:"+this.destination.x+" "+this.destination.y);
                     this.destination = nav.getClosestResourceCoordinate(this.me, this.getVisibleRobotMap(),this.resourceCoordinateList);  
+                    this.log("New location:"+this.destination.x+" "+this.destination.y);
                 }
                 //mine if at location
-                if(nav.sqDist(this.me,this.destination) === 0){
+                if(nav.sqDist(this.me,this.destination) == 0){
                     this.log("Mining at position:"+this.destination.x + " "+this.destination.y);
                     return this.mine();
                 }
@@ -566,7 +569,7 @@ class MyRobot extends BCAbstractRobot {
             return this.attack1();
         }
         else{
-            return this.attack1();
+            // return this.attack1();
         }
 
     }

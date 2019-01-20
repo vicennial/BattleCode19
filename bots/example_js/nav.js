@@ -240,8 +240,9 @@ nav.getClosestResourceCoordinate = (loc,visiblerobots,resourceList) =>{
                 y:resourceList[i][1]
             };
             if(visiblerobots[temp.y][temp.x]>0) continue;
-            if(nav.sqDist(loc,temp)<nav.sqDist(loc,current)) current=loc;
+            if(nav.sqDist(loc,temp)<nav.sqDist(loc,current)) current=temp;
         }
+        
         return current;
 }
 export default nav;
