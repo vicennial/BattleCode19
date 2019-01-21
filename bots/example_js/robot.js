@@ -17,11 +17,12 @@ class MyRobot extends BCAbstractRobot {
         this.resourceCoordinateList = [] // [[x, y, type = 0 if fuel, 1 if karbonite]....]
 
         this.myEnemyCastle = [] // X, Y
-
         this.attackStatusFlag = -1
-
         this.random_move = [0, 0]
+        this.isAttackType = -1
 
+        this.assignedLoc = []
+        this.atAssignedLoc = 0
     }
     getMyVisibleHomieBots() {
         // 
@@ -71,6 +72,31 @@ class MyRobot extends BCAbstractRobot {
             this.signal(msg,radius);
         }
     }
+
+    nextValidLoc(){
+        let len_x = this.map.length
+        let len_y = len_x
+        let mnm = 10000, mnx = 10000, mny = 10000
+        let botMap = this.getVisibleRobotMap()
+        
+        for(let i = 0; i < len_y; ++i){
+            for(let j = 0; j < len_x; ++j){
+                if(i%2 != j%2){
+                    continue;
+                }
+                if(this.map[i][j] == true && botMap[i][j] == false){
+                    let dis = (this.me.x - j) ** 2 + (this.me.y - i) ** 2
+                    if(dis < mnm){
+                        mnm = dis
+                        mnx = j
+                        mny = i
+                    }
+                }
+            }
+        }
+        this.assignedLoc = [mnx, mny]
+    }
+
     getAdjacentEmpty(loc){
         let robotMap=this.getVisibleRobotMap();
         let fullMap=this.map;
@@ -159,10 +185,10 @@ class MyRobot extends BCAbstractRobot {
             }
             for(let cy = offset; cy < offset+len_y/2 && cy<len_y; ++cy){
                 for(let cx = 0; cx < len_x; ++cx){
-                    if(this.fuel_map[cy][cx] == true){
+                    if(this.fuel_map[cy][cx] === true){
                         this.resourceCoordinateList.push([cx, cy, 0])
                     }
-                    if(this.karbonite_map[cy][cx] == true){
+                    if(this.karbonite_map[cy][cx] === true){
                         this.resourceCoordinateList.push([cx, cy, 1])
                     }
                 }
@@ -269,8 +295,67 @@ class MyRobot extends BCAbstractRobot {
         return this.move(choice.x, choice.y)
     }
 
+    getMyVisibleHomieBots(){
+        // 
+        var sensed = this.getVisibleRobots()
+        var visible = sensed.filter((r) => {
+            if (r.team != this.me.team) {
+                return false;
+            }
+            if (nav.sqDist(r, this.me) <= SPECS['UNITS'][this.me.unit]['VISION_RADIUS']) {
+                return true;
+            }
+            return false;
+        })
+        return visible
+    }
+
+
 
     turn() {
+
+        if(this.me.unit != SPECS.CHURCH && this.me.unit != SPECS.CASTLE && this.me.unit != SPECS.PILGRIM){
+            // if the unit type is not determined yet
+            if(this.isAttackType == -1){
+                // check the visible friendly units
+                var visible = this.getMyVisibleHomieBots()
+                if(visible.length < 5){
+                    this.isAttackType = 0
+                }
+                else{
+                    this.isAttackType = 1
+                } 
+            }
+        }
+
+        // check if the unit has been assigned to its initial resting position
+        if(this.me.unit != SPECS.CHURCH && this.me.unit != SPECS.CASTLE){
+            if (this.assignedLoc.length == 0) {
+                this.nextValidLoc();
+            }
+            else {
+                // check if it is there
+                if(this.me.x == this.assignedLoc[0] && this.me.y == this.assignedLoc[1]){
+                    this.atAssignedLoc = 1
+                }                
+                // if not there move in that direction
+                if(!this.atAssignedLoc){
+                    this.nextValidLoc()
+                    let target = this.assignedLoc
+                    this.destination = {x:target[0], y:target[1]}
+                    const choice = nav.goto(
+                        this.me,
+                        this.destination,
+                        this.map,
+                        // this.getPassableMap(),
+                        this.getVisibleRobotMap(),
+                        SPECS["UNITS"][this.me.unit]["SPEED"]);
+                    return this.move(choice.x, choice.y)
+                }
+            }
+        }
+        
+
         // msg = this.encodeMessage(4, 2, 3)
         // this.log(msg)
         step++;
@@ -287,6 +372,26 @@ class MyRobot extends BCAbstractRobot {
                 this.castle = this.getVisibleRobots()
                     .filter(robot => robot.team === this.me.team && robot.unit === SPECS.CASTLE)[0];
             }
+            // // if we don't have a destination, figure out what it is.
+            // if (!this.destination) {
+            //     this.destination = nav.getClosestKarbonite(this.me, this.getKarboniteMap());
+            // }
+            // // If we're near our destination, do the thing
+            // if (this.me.karbonite === 20) {
+            //     this.destination = this.castle;
+            //     if (nav.sqDist(this.me, this.destination) <= 2) {
+            //         this.destination = nav.getClosestKarbonite(this.me, this.getKarboniteMap());
+            //         return this.give(
+            //             this.castle.x - this.me.x,
+            //             this.castle.y - this.me.y,
+            //             this.me.karbonite,
+            //             this.me.fuel);
+            //     }
+            // } else {
+            //     if (nav.sqDist(this.me, this.destination) === 0) {
+            //         return this.mine();
+            //     }
+            // }
 
             if (this.getMapSymmetry==-1){
                 this.getMapSymmetry();
@@ -384,6 +489,7 @@ class MyRobot extends BCAbstractRobot {
                     this.log("New location:"+this.destination.x+" "+this.destination.y);
                 }
                 //mine if at location
+
                 if(nav.sqDist(this.me,this.destination) == 0){
                     this.log("Mining at position:"+this.destination.x + " "+this.destination.y);
                     return this.mine();
@@ -406,9 +512,8 @@ class MyRobot extends BCAbstractRobot {
 
         else if (this.me.unit === SPECS.CASTLE) {
 
+
             // find the type of symmetry in step 0
-            
-            
             if(step === 0){
                 this.getMapSymmetry()
                 if(this.mapSymmetryType === 1){
@@ -441,15 +546,6 @@ class MyRobot extends BCAbstractRobot {
                     this.pendingRecievedMessages[robot.id] = null;
                 }
             }
-
-            // logs known enemy castles every 100th step 
-            // if (step % 100) {
-            //     this.log('KNOWN ENEMY CASTLES: ');
-            //     for (let i = 0; i < this.enemyCastles.length; i++) {
-            //         const { x, y } = this.enemyCastles[i];
-            //         this.log(x + ',' + y);
-            //     }
-            // }
 
             const probabilityUpdateRequired = false
             //
