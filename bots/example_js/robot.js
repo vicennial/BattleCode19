@@ -516,11 +516,11 @@ class MyRobot extends BCAbstractRobot {
             let checkPreacher = this.buildBotProbability[0] + this.buildBotProbability[1] + this.buildBotProbability[2] + this.buildBotProbability[3]
 
             // CHANGE....
-            checkPilgrim=1;
+            // checkPilgrim=1;
             this.log("token is " + token + ' ' + checkPilgrim + ' ' + checkPreacher)
             this.log("KARBONITE = " + this.karbonite)
             this.log("fuel = " + this.fuel)
-            if(this.karbonite<90) return;
+            // if(this.karbonite<90) return;
             if (token < checkPilgrim) {
                 // create Pilgrim
 
