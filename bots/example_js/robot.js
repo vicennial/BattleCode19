@@ -23,6 +23,8 @@ class MyRobot extends BCAbstractRobot {
 
         this.assignedLoc = []
         this.atAssignedLoc = 0
+
+        this.enemyResourceCoordinateList = [];
     }
     getMyVisibleHomieBots() {
         // 
@@ -37,7 +39,7 @@ class MyRobot extends BCAbstractRobot {
             return false;
         })
         return visible;
-    }    
+    }       
     decode(msg){
         let decodedMsg ={
             code:null,
@@ -173,6 +175,20 @@ class MyRobot extends BCAbstractRobot {
                     }
                 }
             }
+            offset = len_x/2;
+            if(this.me.x > len_x/2){
+                offset = 0;
+            }
+            for (let cy = 0; cy < len_y; ++cy) {
+                for (let cx = offset; cx < offset + len_x / 2; ++cx) {
+                    if (this.fuel_map[cy][cx] == true) {
+                        this.enemyResourceCoordinateList.push([cx, cy, 0])
+                    }
+                    if (this.karbonite_map[cy][cx] == true) {
+                        this.enemyResourceCoordinateList.push([cx, cy, 1])
+                    }
+                }
+            }            
         }
         else{
             // symmetry along y
@@ -193,6 +209,20 @@ class MyRobot extends BCAbstractRobot {
                     }
                 }
             }
+            offset = len_y/2;
+            if(this.me.y > len_y/2){
+                offset = 0;
+            }
+            for (let cy = offset; cy < offset + len_y / 2 && cy < len_y; ++cy) {
+                for (let cx = 0; cx < len_x; ++cx) {
+                    if (this.fuel_map[cy][cx] === true) {
+                        this.enemyResourceCoordinateList.push([cx, cy, 0])
+                    }
+                    if (this.karbonite_map[cy][cx] === true) {
+                        this.enemyResourceCoordinateList.push([cx, cy, 1])
+                    }
+                }
+            }            
         }
     }
 
@@ -295,20 +325,7 @@ class MyRobot extends BCAbstractRobot {
         return this.move(choice.x, choice.y)
     }
 
-    getMyVisibleHomieBots(){
-        // 
-        var sensed = this.getVisibleRobots()
-        var visible = sensed.filter((r) => {
-            if (r.team != this.me.team) {
-                return false;
-            }
-            if (nav.sqDist(r, this.me) <= SPECS['UNITS'][this.me.unit]['VISION_RADIUS']) {
-                return true;
-            }
-            return false;
-        })
-        return visible
-    }
+
 
 
 
@@ -329,7 +346,7 @@ class MyRobot extends BCAbstractRobot {
         }
 
         // check if the unit has been assigned to its initial resting position
-        if(this.me.unit != SPECS.CHURCH && this.me.unit != SPECS.CASTLE){
+        if(this.me.unit != SPECS.CHURCH && this.me.unit != SPECS.CASTLE && this.me.unit != SPECS.PILGRIM){
             if (this.assignedLoc.length == 0) {
                 this.nextValidLoc();
             }
@@ -367,42 +384,22 @@ class MyRobot extends BCAbstractRobot {
             return this.attack1();
         } else if (this.me.unit === SPECS.PILGRIM) { //PILGRIM
             //
+            this.log("PILGRIM");
             // On the first turn, find out our base
             if (!this.castle) {
                 this.castle = this.getVisibleRobots()
                     .filter(robot => robot.team === this.me.team && robot.unit === SPECS.CASTLE)[0];
             }
-            // // if we don't have a destination, figure out what it is.
-            // if (!this.destination) {
-            //     this.destination = nav.getClosestKarbonite(this.me, this.getKarboniteMap());
-            // }
-            // // If we're near our destination, do the thing
-            // if (this.me.karbonite === 20) {
-            //     this.destination = this.castle;
-            //     if (nav.sqDist(this.me, this.destination) <= 2) {
-            //         this.destination = nav.getClosestKarbonite(this.me, this.getKarboniteMap());
-            //         return this.give(
-            //             this.castle.x - this.me.x,
-            //             this.castle.y - this.me.y,
-            //             this.me.karbonite,
-            //             this.me.fuel);
-            //     }
-            // } else {
-            //     if (nav.sqDist(this.me, this.destination) === 0) {
-            //         return this.mine();
-            //     }
-            // }
-
+            this.log("before get sym");
             if (this.getMapSymmetry==-1){
                 this.getMapSymmetry();
                 this.getMyResourceCoordinateList();
             }
-
+            this.log("after get sym");
             let getRandDestination = () =>{
                 let temp = nav.getRandomResourceCoordinates(this.resourceCoordinateList);
                 return temp;
             }
-            this.log("Robot id lmao:"+this.me.id+" "+this.pilgrimResourceAssigned);
             if(!this.pilgrimResourceAssigned){
                 this.log("Pilgrim has been assigned a loc!");
                 // assign it to random location
@@ -411,6 +408,7 @@ class MyRobot extends BCAbstractRobot {
                 this.log("Pilgram assigned mine location" +this.destination.x + " "+this.destination.y);
                 // throw "lbuhbue";
             }
+            this.log("Robot id lmao:"+this.me.id+" "+this.pilgrimResourceAssigned+" My pos :"+this.me.x+ " "+ this.me.y + " My Dest: "+ this.destination.x +" "+this.destination.y);
             //stop mining logic
             if(this.me.fuel >=100 || this.me.karbonite>=20){
                 this.log("Done mining!");
@@ -511,7 +509,7 @@ class MyRobot extends BCAbstractRobot {
         }
 
         else if (this.me.unit === SPECS.CASTLE) {
-
+            this.log("CASTLE");
 
             // find the type of symmetry in step 0
             if(step === 0){
@@ -528,24 +526,26 @@ class MyRobot extends BCAbstractRobot {
                 }
             }
 
+            let target = nav.getClosestResourceCoordinateWithRandom(this.me,this.enemyResourceCoordinateList);
+            // throw "NIBBER: "+target.x+" "+target.y;
 
             const visible = this.getVisibleRobots();
-            const messagingRobots = visible.filter(robot => {
-                return robot.castle_talk;
-            });
+            // const messagingRobots = visible.filter(robot => {
+            //     return robot.castle_talk;
+            // });
 
-            for (let i = 0; i < messagingRobots.length; i++) {
-                const robot = messagingRobots[i];
-                if (!this.pendingRecievedMessages[robot.id]) {
-                    this.pendingRecievedMessages[robot.id] = robot.castle_talk;
-                } else {
-                    this.enemyCastles.push({
-                        x: this.pendingRecievedMessages[robot.id],
-                        y: robot.castle_talk,
-                    });
-                    this.pendingRecievedMessages[robot.id] = null;
-                }
-            }
+            // for (let i = 0; i < messagingRobots.length; i++) {
+            //     const robot = messagingRobots[i];
+            //     if (!this.pendingRecievedMessages[robot.id]) {
+            //         this.pendingRecievedMessages[robot.id] = robot.castle_talk;
+            //     } else {
+            //         this.enemyCastles.push({
+            //             x: this.pendingRecievedMessages[robot.id],
+            //             y: robot.castle_talk,
+            //         });
+            //         this.pendingRecievedMessages[robot.id] = null;
+            //     }
+            // }
 
             const probabilityUpdateRequired = false
             //
