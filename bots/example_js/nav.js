@@ -241,8 +241,8 @@ nav.getRandomResourceCoordinates = (resourceList) =>{
 }
 nav.getClosestResourceCoordinate = (loc,visiblerobots,resourceList) =>{
         let current={
-            x:0,
-            y:0
+            x:500,
+            y:500
         };
         let len = resourceList.length;
         for(let i =0;i<len;i++){
@@ -255,6 +255,36 @@ nav.getClosestResourceCoordinate = (loc,visiblerobots,resourceList) =>{
         }
         
         return current;
+}
+nav.getClosestResourceCoordinateWithRandom = (loc, enemyResourceList) => {
+    let current = {
+        x: 0,
+        y: 0
+    };
+    let arr =[];
+    let len = enemyResourceList.length;
+    for (let i = 0; i < len; i++) {
+        let temp = {
+            x: enemyResourceList[i][0],
+            y: enemyResourceList[i][1]
+        };
+        arr.push(temp);
+        // if (nav.sqDist(loc, temp) < nav.sqDist(loc, current)) current = temp;
+    }
+    arr.sort(function(x,y){
+        let distx = nav.sqDist(loc,x), disty=nav.sqDist(loc,y);
+        if(distx < disty){
+            return -1;
+        } 
+        if(distx > disty){
+            return 1;
+        }
+        return 0;
+    });
+    let choices = Math.min(10, len);
+    const randnum = Math.floor(Math.random() * choices);
+    // throw "My position: "+loc.x+" "+loc.y+"\n this arr:"+arr[randnum].x+" "+arr[randnum].y +"\n";
+    return arr[randnum];
 }
 export default nav;
 
