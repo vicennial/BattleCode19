@@ -181,9 +181,20 @@ nav.goto = (loc, destination, fullMap, robotMap, radius) => {
             goalDir = nav.rotate(goalDir, 1);
             tryDir++;
         }
-        return goalDir;
+        let current = {
+            x: goalDir.x,
+            y: goalDir.y,
+            nopath: 1
+        };
+        return current;
     }
-    return nav.getDir(loc,nextloc,fullMap,robotMap);
+    let temp = nav.getDir(loc,nextloc,fullMap,robotMap);
+    let current = {
+        x: temp.x,
+        y: temp.y,
+        nopath: 0
+    };
+    return current;
 };
 // nav.goto = (loc, destination, fullMap, robotMap) => {
 //     let goalDir = nav.getDir(loc, destination);
