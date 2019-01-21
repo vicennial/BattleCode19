@@ -23,9 +23,60 @@ class MyRobot extends BCAbstractRobot {
 
         this.assignedLoc = []
         this.atAssignedLoc = 0
-
         this.enemyResourceCoordinateList = [];
+        this.targetAttack = {x: -1, y: -1}
+        this.ttl = 0
     }
+
+    decode(msg) {
+        let decodedMsg = {
+            code: null,
+            x: null,
+            y: null,
+        };
+        if (msg & 1) { //attack
+            decodedMsg.code = msg & 14;
+            decodedMsg.x = (msg >> 4) & 63;
+            decodedMsg.y = (msg >> (4 + 6)) & 63;
+        }
+        else { // remaining
+            decodedMsg.code = msg;
+        }
+        return decodedMsg;
+    }
+
+    encodeMessage(opcode, x = -1, y = -1) {
+        var msg = opcode << 1
+        if (x != -1 && y != -1) {
+            msg |= 1
+            msg |= (x << 4)
+            msg |= (y << 10)
+        }
+        return msg
+    }
+    sendMessage(msg, radius) {
+        if (radius == 0) { //castle
+            this.castle_talk(msg);
+        }
+        else {
+            this.signal(msg, radius);
+        }
+    }
+
+    setMyAttackCoordinate() {
+        let signal = -1
+        let sensed = this.getVisibleRobots()
+        for (let i = 0; i < sensed.length; ++i) {
+            let r = sensed[i]
+            if (r.team == this.me.team && r.unit == SPECS.CASTLE) {
+                signal = r.signal
+            }
+        }
+        if (signal != -1) {
+            this.targetAttack = this.decode(signal)
+        }
+    }
+
     getMyVisibleHomieBots() {
         // 
         var sensed = this.getVisibleRobots()
@@ -39,41 +90,8 @@ class MyRobot extends BCAbstractRobot {
             return false;
         })
         return visible;
-    }       
-    decode(msg){
-        let decodedMsg ={
-            code:null,
-            x:null,
-            y:null
-        };
-        if(msg & 1){ //attack
-            decodedMsg.code = msg & 14;
-            decodedMsg.x = (msg >> 4) & 63;
-            decodedMsg.y = (msg >> (4+6)) & 63;
-        }
-        else{ // remaining
-            decodedMsg.code = msg;
-        }
-        return decodedMsg;
-    }
-
-    encodeMessage(opcode, x=-1, y=-1){
-        var msg = opcode << 1
-        if(x != -1 && y != -1){
-            msg |= 1
-            msg |= (x << 4)
-            msg |= (y << 10)
-        }
-        return msg
-    }
-    sendMessage(msg, radius){
-        if(radius==0){ //castle
-            this.castle_talk(msg);
-        } 
-        else{
-            this.signal(msg,radius);
-        }
-    }
+    }    
+    
 
     nextValidLoc(){
         let len_x = this.map.length
@@ -162,11 +180,11 @@ class MyRobot extends BCAbstractRobot {
             var offset = 0
             var len_y = this.map.length
             var len_x = this.map.length
-            if(this.me.x > len_x/2){
-                offset = len_x/2;
+            if(this.me.x > Math.floor(len_x/2)){
+                offset = Math.floor(len_x/2);
             }
             for(let cy = 0; cy < len_y; ++cy){
-                for(let cx = offset; cx < offset+len_x/2; ++cx){
+                for(let cx = offset; cx < offset+Math.floor(len_x/2); ++cx){
                     if(this.fuel_map[cy][cx] == true){
                         this.resourceCoordinateList.push([cx, cy, 0])
                     }
@@ -196,10 +214,10 @@ class MyRobot extends BCAbstractRobot {
             var offset = 0
             var len_y = this.map.length
             var len_x = this.map.length
-            if(this.me.y > len_y/2){
-                offset = len_y/2;
+            if(this.me.y > Math.floor(len_y/2)){
+                offset = Math.floor(len_y/2);
             }
-            for(let cy = offset; cy < offset+len_y/2 && cy<len_y; ++cy){
+            for(let cy = offset; cy < offset+Math.floor(len_y/2) && cy<len_y; ++cy){
                 for(let cx = 0; cx < len_x; ++cx){
                     if(this.fuel_map[cy][cx] === true){
                         this.resourceCoordinateList.push([cx, cy, 0])
@@ -229,7 +247,7 @@ class MyRobot extends BCAbstractRobot {
     getMapSymmetry(){
         this.log("Getting map symmetry")
         const len_y = this.map.length
-        const len_x = this.map[0].length
+        const len_x = this.map.length
         
         // check for symmetry along x axis
         for(let cy = 0; cy < len_y; ++cy){
@@ -252,17 +270,9 @@ class MyRobot extends BCAbstractRobot {
     }
 
     attack1(){
-        // choose random coordinates
-        var target_x = 0
-        var target_y = 0
-        // while(1){
-            target_x = Math.floor(Math.random() * this.map.length)
-            target_y = Math.floor(Math.random() * this.map.length)
-            this.random_move = [target_x, target_y]
-            // if(this.map[target_y][target_x] === 0){
-            //     break;
-            // }
-        // }
+        var target_x = this.targetAttack.x
+        var target_y = this.targetAttack.y
+
         this.log("I am here: " + this.me.x + " " + this.me.y)
         this.log("I am going here: " + target_x + " " + target_y)
 
@@ -294,16 +304,16 @@ class MyRobot extends BCAbstractRobot {
             }
         });
 
-        if (attacking.length > 0) {
-            this.log("getting attacked!")
-            const attacker = attacking[0];
-            const dir = nav.getDir(this.me, attacker);
-            const otherDir = {
-                x: -dir.x,
-                y: -dir.y,
-            };
-            return this.move(otherDir.x, otherDir.y);
-        }
+        // if (attacking.length > 0) {
+        //     this.log("getting attacked!")
+        //     const attacker = attacking[0];
+        //     const dir = nav.getDir(this.me, attacker);
+        //     const otherDir = {
+        //         x: -dir.x,
+        //         y: -dir.y,
+        //     };
+        //     return this.move(otherDir.x, otherDir.y);
+        // }
         this.log(attackable);
         if (attackable.length > 0) {
             this.log("attacking")
@@ -322,6 +332,17 @@ class MyRobot extends BCAbstractRobot {
             // this.getPassableMap(),
             this.getVisibleRobotMap(),
             SPECS["UNITS"][this.me.unit]["SPEED"]);
+        
+        if(choice.nopath == 1){
+            this.ttl++;
+        }
+        else{
+            this.ttl = 0;
+        }
+        if(this.ttl == 5){
+            choice.x = 0;
+            choice.y = 0;
+        }
         return this.move(choice.x, choice.y)
     }
 
@@ -376,12 +397,16 @@ class MyRobot extends BCAbstractRobot {
         // msg = this.encodeMessage(4, 2, 3)
         // this.log(msg)
         step++;
+        this.setMyAttackCoordinate()
         this.log("symmetry type is: " + this.mapSymmetryType)
         this.getMyResourceCoordinateList()
         this.log("RESOURCE LIST --- " + this.resourceCoordinateList)
         if (this.me.unit === SPECS.PROPHET) {
             this.log("PROF");
-            return this.attack1();
+            if(this.targetAttack.x != -1 && this.targetAttack.y != -1){
+                return this.attack1();
+            }
+            
         } else if (this.me.unit === SPECS.PILGRIM) { //PILGRIM
             //
             this.log("PILGRIM");
@@ -526,6 +551,12 @@ class MyRobot extends BCAbstractRobot {
                 }
             }
 
+            if(step%10 == 0){
+                let sendAttack = this.encodeMessage(0, 20, 20)
+                this.sendMessage(sendAttack, 64)
+            }
+
+            // const visible = this.getVisibleRobots();
             let target = nav.getClosestResourceCoordinateWithRandom(this.me,this.enemyResourceCoordinateList);
             // throw "NIBBER: "+target.x+" "+target.y;
 
@@ -662,9 +693,14 @@ class MyRobot extends BCAbstractRobot {
 
         }
         else if(this.me.unit === SPECS.CRUSADER){
-            return this.attack1();
+            if (this.targetAttack.x != -1 && this.targetAttack.y != -1) {
+                return this.attack1();
+            }
         }
         else{
+            // if (this.targetAttack.x != -1 && this.targetAttack.y != -1) {
+            //     return this.attack1();
+            // }
             // return this.attack1();
         }
 
