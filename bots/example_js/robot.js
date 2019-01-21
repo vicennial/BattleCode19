@@ -23,6 +23,8 @@ class MyRobot extends BCAbstractRobot {
 
         this.assignedLoc = []
         this.atAssignedLoc = 0
+
+        this.enemyResourceCoordinateList = [];
     }
     getMyVisibleHomieBots() {
         // 
@@ -37,7 +39,7 @@ class MyRobot extends BCAbstractRobot {
             return false;
         })
         return visible;
-    }    
+    }       
     decode(msg){
         let decodedMsg ={
             code:null,
@@ -173,6 +175,20 @@ class MyRobot extends BCAbstractRobot {
                     }
                 }
             }
+            offset = len_x/2;
+            if(this.me.x > len_x/2){
+                offset = 0;
+            }
+            for (let cy = 0; cy < len_y; ++cy) {
+                for (let cx = offset; cx < offset + len_x / 2; ++cx) {
+                    if (this.fuel_map[cy][cx] == true) {
+                        this.enemyResourceCoordinateList.push([cx, cy, 0])
+                    }
+                    if (this.karbonite_map[cy][cx] == true) {
+                        this.enemyResourceCoordinateList.push([cx, cy, 1])
+                    }
+                }
+            }            
         }
         else{
             // symmetry along y
@@ -193,6 +209,20 @@ class MyRobot extends BCAbstractRobot {
                     }
                 }
             }
+            offset = len_y/2;
+            if(this.me.y > len_y/2){
+                offset = 0;
+            }
+            for (let cy = offset; cy < offset + len_y / 2 && cy < len_y; ++cy) {
+                for (let cx = 0; cx < len_x; ++cx) {
+                    if (this.fuel_map[cy][cx] === true) {
+                        this.enemyResourceCoordinateList.push([cx, cy, 0])
+                    }
+                    if (this.karbonite_map[cy][cx] === true) {
+                        this.enemyResourceCoordinateList.push([cx, cy, 1])
+                    }
+                }
+            }            
         }
     }
 
@@ -295,20 +325,7 @@ class MyRobot extends BCAbstractRobot {
         return this.move(choice.x, choice.y)
     }
 
-    getMyVisibleHomieBots(){
-        // 
-        var sensed = this.getVisibleRobots()
-        var visible = sensed.filter((r) => {
-            if (r.team != this.me.team) {
-                return false;
-            }
-            if (nav.sqDist(r, this.me) <= SPECS['UNITS'][this.me.unit]['VISION_RADIUS']) {
-                return true;
-            }
-            return false;
-        })
-        return visible
-    }
+
 
 
 
@@ -372,26 +389,6 @@ class MyRobot extends BCAbstractRobot {
                 this.castle = this.getVisibleRobots()
                     .filter(robot => robot.team === this.me.team && robot.unit === SPECS.CASTLE)[0];
             }
-            // // if we don't have a destination, figure out what it is.
-            // if (!this.destination) {
-            //     this.destination = nav.getClosestKarbonite(this.me, this.getKarboniteMap());
-            // }
-            // // If we're near our destination, do the thing
-            // if (this.me.karbonite === 20) {
-            //     this.destination = this.castle;
-            //     if (nav.sqDist(this.me, this.destination) <= 2) {
-            //         this.destination = nav.getClosestKarbonite(this.me, this.getKarboniteMap());
-            //         return this.give(
-            //             this.castle.x - this.me.x,
-            //             this.castle.y - this.me.y,
-            //             this.me.karbonite,
-            //             this.me.fuel);
-            //     }
-            // } else {
-            //     if (nav.sqDist(this.me, this.destination) === 0) {
-            //         return this.mine();
-            //     }
-            // }
 
             if (this.getMapSymmetry==-1){
                 this.getMapSymmetry();
@@ -402,7 +399,7 @@ class MyRobot extends BCAbstractRobot {
                 let temp = nav.getRandomResourceCoordinates(this.resourceCoordinateList);
                 return temp;
             }
-            this.log("Robot id lmao:"+this.me.id+" "+this.pilgrimResourceAssigned);
+            this.log("Robot id lmao:"+this.me.id+" "+this.pilgrimResourceAssigned+" Dest:"+this.destination.x + " "+this.destination.y);
             if(!this.pilgrimResourceAssigned){
                 this.log("Pilgrim has been assigned a loc!");
                 // assign it to random location
@@ -528,6 +525,8 @@ class MyRobot extends BCAbstractRobot {
                 }
             }
 
+            let target = nav.getClosestResourceCoordinateWithRandom(this.me,this.enemyResourceCoordinateList);
+            // throw "NIBBER: "+target.x+" "+target.y;
 
             const visible = this.getVisibleRobots();
             const messagingRobots = visible.filter(robot => {
