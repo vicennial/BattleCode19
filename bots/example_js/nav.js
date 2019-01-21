@@ -228,5 +228,22 @@ nav.getRandomResourceCoordinates = (resourceList) =>{
     // throw "asdadssa:"+destination.x +" "+ destination.y;
     return destination;        
 }
+nav.getClosestResourceCoordinate = (loc,visiblerobots,resourceList) =>{
+        let current={
+            x:0,
+            y:0
+        };
+        let len = resourceList.length;
+        for(let i =0;i<len;i++){
+            let temp={
+                x:resourceList[i][0],
+                y:resourceList[i][1]
+            };
+            if(visiblerobots[temp.y][temp.x]>0) continue;
+            if(nav.sqDist(loc,temp)<nav.sqDist(loc,current)) current=temp;
+        }
+        
+        return current;
+}
 export default nav;
 
