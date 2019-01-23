@@ -485,7 +485,7 @@ class MyRobot extends BCAbstractRobot {
                         this.destination= getRandDestination();
                     }
                     else{
-                        this.destination = nav.getClosestResourceCoordinate(this.me, this.getVisibleRobotMap(),this.resourceCoordinateList);
+                        this.destination = nav.getClosestResourceCoordinate(this.me, this.getVisibleRobotMap(),this.resourceCoordinateList,this.fuel);
                     }
                     this.log("Giving all my resouces to:"+prevdest.x+" "+prevdest.y)
                     this.log("New destination:"+this.destination.x+" "+this.destination.y);
@@ -508,7 +508,7 @@ class MyRobot extends BCAbstractRobot {
                         break;
                     }
                     this.log("Assigning new location to mine! Old locations:"+this.destination.x+" "+this.destination.y);
-                    this.destination = nav.getClosestResourceCoordinate(this.me, this.getVisibleRobotMap(),this.resourceCoordinateList);  
+                    this.destination = nav.getClosestResourceCoordinate(this.me, this.getVisibleRobotMap(),this.resourceCoordinateList,this.fuel);  
                     this.log("New location:"+this.destination.x+" "+this.destination.y);
                 }
                 //mine if at location
