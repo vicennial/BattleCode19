@@ -265,7 +265,7 @@ nav.getClosestResourceCoordinate = (loc,visiblerobots,resourceList,fuel) =>{
         }
         var current;
         let probFuel=1,probKarbonite=1;
-        if(fuel > threshold){
+        if(fuel > fuelthreshold){
             probFuel=0.5; probKarbonite=0.5;
         }
         else{

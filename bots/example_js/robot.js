@@ -29,6 +29,7 @@ class MyRobot extends BCAbstractRobot {
 
         this.waitOneTurn = 1
         this.castleWait = 4
+        this.returning=0;
     }
 
     decode(msg) {
@@ -455,7 +456,7 @@ class MyRobot extends BCAbstractRobot {
             }
             this.log("Robot id lmao:"+this.me.id+" "+this.pilgrimResourceAssigned+" My pos :"+this.me.x+ " "+ this.me.y + " My Dest: "+ this.destination.x +" "+this.destination.y);
             //stop mining logic
-            if(this.me.fuel >=100 || this.me.karbonite>=20){
+            if((this.me.fuel >=100 || this.me.karbonite>=20) && this.returning==0){
                 this.log("Done mining!");
                 this.returning=1;
                 // this.destination=this.castle;
@@ -469,7 +470,7 @@ class MyRobot extends BCAbstractRobot {
                 };
                 for(let i=0;i<len;i++){
                     let current=visibleAllyBots[i];
-                    if(current.unit==SPECS.CHURCH){
+                    if(current.unit==SPECS.CHURCH || current.unit == SPECS.CASTLE){
                         churchloc.x=current.x;
                         churchloc.y=current.y;
                         break;
@@ -542,7 +543,7 @@ class MyRobot extends BCAbstractRobot {
                     };
                     for (let i = 0; i < len; i++) {
                         let current = visibleAllyBots[i];
-                        if (current.unit == SPECS.CHURCH) {
+                        if (current.unit == SPECS.CHURCH || current.unit == SPECS.CASTLE) {
                             churchloc.x = current.x;
                             churchloc.y = current.y;
                             break;
