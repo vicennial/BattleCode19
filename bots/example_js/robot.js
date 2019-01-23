@@ -26,6 +26,9 @@ class MyRobot extends BCAbstractRobot {
         this.enemyResourceCoordinateList = [];
         this.targetAttack = {x: -1, y: -1}
         this.ttl = 0
+
+        this.waitOneTurn = 1
+        this.castleWait = 4
     }
 
     decode(msg) {
@@ -351,6 +354,23 @@ class MyRobot extends BCAbstractRobot {
 
 
     turn() {
+
+        if(this.me.unit == SPECS.CASTLE){
+            if(this.castleWait > 0){
+                this.castleWait--;
+            }
+            else{
+                if(this.karbonite < 50 && this.waitOneTurn == 1){
+                    return;
+                }
+                if(this.waitOneTurn){
+                    this.waitOneTurn = 0;
+                    return;
+                }
+                this.waitOneTurn = 1;
+                this.castleWait = 4;
+            }
+        }
 
         if(this.me.unit != SPECS.CHURCH && this.me.unit != SPECS.CASTLE && this.me.unit != SPECS.PILGRIM){
             // if the unit type is not determined yet
