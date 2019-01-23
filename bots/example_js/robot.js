@@ -26,6 +26,10 @@ class MyRobot extends BCAbstractRobot {
         this.enemyResourceCoordinateList = [];
         this.targetAttack = {x: -1, y: -1}
         this.ttl = 0
+
+        this.waitOneTurn = 1
+        this.castleWait = 4
+        this.returning=0;
     }
 
     decode(msg) {
@@ -352,6 +356,23 @@ class MyRobot extends BCAbstractRobot {
 
     turn() {
 
+        if(this.me.unit == SPECS.CASTLE){
+            if(this.castleWait > 0){
+                this.castleWait--;
+            }
+            else{
+                if(this.karbonite < 50 && this.waitOneTurn == 1){
+                    return;
+                }
+                if(this.waitOneTurn){
+                    this.waitOneTurn = 0;
+                    return;
+                }
+                this.waitOneTurn = 1;
+                this.castleWait = 4;
+            }
+        }
+
         if(this.me.unit != SPECS.CHURCH && this.me.unit != SPECS.CASTLE && this.me.unit != SPECS.PILGRIM){
             // if the unit type is not determined yet
             if(this.isAttackType == -1){
@@ -435,7 +456,7 @@ class MyRobot extends BCAbstractRobot {
             }
             this.log("Robot id lmao:"+this.me.id+" "+this.pilgrimResourceAssigned+" My pos :"+this.me.x+ " "+ this.me.y + " My Dest: "+ this.destination.x +" "+this.destination.y);
             //stop mining logic
-            if(this.me.fuel >=100 || this.me.karbonite>=20){
+            if((this.me.fuel >=100 || this.me.karbonite>=20) && this.returning==0){
                 this.log("Done mining!");
                 this.returning=1;
                 // this.destination=this.castle;
@@ -449,7 +470,7 @@ class MyRobot extends BCAbstractRobot {
                 };
                 for(let i=0;i<len;i++){
                     let current=visibleAllyBots[i];
-                    if(current.unit==SPECS.CHURCH){
+                    if(current.unit==SPECS.CHURCH || current.unit == SPECS.CASTLE){
                         churchloc.x=current.x;
                         churchloc.y=current.y;
                         break;
@@ -485,7 +506,7 @@ class MyRobot extends BCAbstractRobot {
                         this.destination= getRandDestination();
                     }
                     else{
-                        this.destination = nav.getClosestResourceCoordinate(this.me, this.getVisibleRobotMap(),this.resourceCoordinateList);
+                        this.destination = nav.getClosestResourceCoordinate(this.me, this.getVisibleRobotMap(),this.resourceCoordinateList,this.fuel);
                     }
                     this.log("Giving all my resouces to:"+prevdest.x+" "+prevdest.y)
                     this.log("New destination:"+this.destination.x+" "+this.destination.y);
@@ -508,7 +529,7 @@ class MyRobot extends BCAbstractRobot {
                         break;
                     }
                     this.log("Assigning new location to mine! Old locations:"+this.destination.x+" "+this.destination.y);
-                    this.destination = nav.getClosestResourceCoordinate(this.me, this.getVisibleRobotMap(),this.resourceCoordinateList);  
+                    this.destination = nav.getClosestResourceCoordinate(this.me, this.getVisibleRobotMap(),this.resourceCoordinateList,this.fuel);  
                     this.log("New location:"+this.destination.x+" "+this.destination.y);
                 }
                 //mine if at location
@@ -522,7 +543,7 @@ class MyRobot extends BCAbstractRobot {
                     };
                     for (let i = 0; i < len; i++) {
                         let current = visibleAllyBots[i];
-                        if (current.unit == SPECS.CHURCH) {
+                        if (current.unit == SPECS.CHURCH || current.unit == SPECS.CASTLE) {
                             churchloc.x = current.x;
                             churchloc.y = current.y;
                             break;
