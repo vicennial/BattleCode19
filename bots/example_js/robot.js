@@ -514,6 +514,34 @@ class MyRobot extends BCAbstractRobot {
                 //mine if at location
 
                 if(nav.sqDist(this.me,this.destination) == 0){
+                    let visibleAllyBots = this.getMyVisibleHomieBots();
+                    let len = visibleAllyBots.length;
+                    let churchloc = {
+                        x: -1,
+                        y: -1
+                    };
+                    for (let i = 0; i < len; i++) {
+                        let current = visibleAllyBots[i];
+                        if (current.unit == SPECS.CHURCH) {
+                            churchloc.x = current.x;
+                            churchloc.y = current.y;
+                            break;
+                        }
+                    }
+
+                    if (churchloc.x != -1) {//church already therer
+                        
+                    }
+                    else { // no church
+                        if (this.fuel >= 200 && this.karbonite >= 50) {
+                            let possibleLoc = this.getAdjacentEmptyNotOnResource(this.me);
+                            this.log("Currently at:" + this.me.x + " " + this.me.y);
+                            this.log("Building at:" + possibleLoc.x + " " + possibleLoc.y);
+                            if (possibleLoc.x != -1) {
+                                return this.buildUnit(SPECS.CHURCH, possibleLoc.x - this.me.x, possibleLoc.y - this.me.y);
+                            }
+                        }
+                    }
                     this.log("Mining at position:"+this.destination.x + " "+this.destination.y);
                     return this.mine();
                 }
