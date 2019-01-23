@@ -30,6 +30,9 @@ class MyRobot extends BCAbstractRobot {
         this.waitOneTurn = 1
         this.castleWait = 4
         this.returning=0;
+
+        this.attacktrigger = -1
+        this.step = -1
     }
 
     decode(msg) {
@@ -328,10 +331,13 @@ class MyRobot extends BCAbstractRobot {
             this.log('attacking! ' + r + ' at loc ' + (r.x - this.me.x, r.y - this.me.y));
             return this.attack(r.x - this.me.x, r.y - this.me.y);
         }
-        this.destination = {x:target_x, y:target_y,}
+        let destination = { x: target_x, y: target_y, }
+        if (target_x == -1 || target_y == -1) {
+            return;
+        }
         const choice = nav.goto(
             this.me,
-            this.destination,
+            destination,
             this.map,
             // this.getPassableMap(),
             this.getVisibleRobotMap(),
@@ -355,8 +361,23 @@ class MyRobot extends BCAbstractRobot {
 
 
     turn() {
-
+        this.log("Step = ==== ====== ===" + step + " " + this.step)
         if(this.me.unit == SPECS.CASTLE){
+
+            if(this.myEnemyCastle.length > 0 && this.attacktrigger != -1){
+                let target = { x: this.myEnemyCastle[0], y: this.myEnemyCastle[1] }
+                if (this.step % this.attacktrigger == 0) {
+                    this.log("hihi" + target.x + " " + target.y + " " + this.step + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+                    // let sendAttack = this.encodeMessage(0, target.x, target.y)
+                    let sendAttack = this.encodeMessage(0, target.x, target.y)
+                    this.sendMessage(sendAttack, 64)
+                }
+            }
+            
+
+            if(this.step > 0){
+                this.log("CASTLE CASTLE " + this.attacktrigger)
+            }
             if(this.castleWait > 0){
                 this.castleWait--;
             }
@@ -418,6 +439,7 @@ class MyRobot extends BCAbstractRobot {
         // msg = this.encodeMessage(4, 2, 3)
         // this.log(msg)
         step++;
+        this.step++;
         this.setMyAttackCoordinate()
         this.log("symmetry type is: " + this.mapSymmetryType)
         this.getMyResourceCoordinateList()
@@ -585,27 +607,23 @@ class MyRobot extends BCAbstractRobot {
         else if (this.me.unit === SPECS.CASTLE) {
             this.log("CASTLE");
 
-            // find the type of symmetry in step 0
-            if(step === 0){
+            if (this.step === 0) {
+                this.attacktrigger = Math.floor(Math.random() * 75) + 75
                 this.getMapSymmetry()
-                if(this.mapSymmetryType === 1){
+                if (this.mapSymmetryType === 1) {
                     // symmetry along x
-                    var len_x = this.map[0].length
-                    this.myEnemyCastle = [len_x-1-this.me.x, this.me.y]
+                    var len_x = this.map.length
+                    this.myEnemyCastle = [len_x - 1 - this.me.x, this.me.y]
                 }
-                else{
+                else {
                     // symmetry along y
                     var len_y = this.map.length
-                    this.myEnemyCastle = [this.me.x, len_y-1-this.me.y]
+                    this.myEnemyCastle = [this.me.x, len_y - 1 - this.me.y]
                 }
             }
 
-            let target = nav.getClosestResourceCoordinateWithRandom(this.me, this.enemyResourceCoordinateList);
-
-            if(step == 50){
-                let sendAttack = this.encodeMessage(0, target.x, target.y)
-                this.sendMessage(sendAttack, 64)
-            }
+            // let target = nav.getClosestResourceCoordinateWithRandom(this.me, this.enemyResourceCoordinateList);
+            
 
             // const visible = this.getVisibleRobots();
             // throw "NIBBER: "+target.x+" "+target.y;
@@ -743,9 +761,9 @@ class MyRobot extends BCAbstractRobot {
 
         }
         else if(this.me.unit === SPECS.CRUSADER){
-            if (this.targetAttack.x != -1 && this.targetAttack.y != -1) {
+            // if (this.targetAttack.x != -1 && this.targetAttack.y != -1) {
                 return this.attack1();
-            }
+            // }
         }
         else{
             // if (this.targetAttack.x != -1 && this.targetAttack.y != -1) {
