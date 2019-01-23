@@ -117,7 +117,7 @@ function create2DArray(numRows, numColumns) {
     return array;
 }
 nav.bfsdir = (loc, destination, fullMap, robotMap, radius) => {
-    if(robotMap[destination.y][destination.x] > 0) return {x:-1,y:-1};
+    // if(robotMap[destination.y][destination.x] > 0) return {x:-1,y:-1};
     const mapLen= fullMap.length;
     var queue = [];
     queue.pop = queue.shift;
@@ -176,23 +176,36 @@ nav.goto = (loc, destination, fullMap, robotMap, radius) => {
     let nextloc = nav.bfsdir(loc,destination,fullMap,robotMap,radius);
     // throw "Position:" + loc.x + " " + loc.y +"\n" +"Nextloc:" + nextloc.x + " " +nextloc.y + "\n";
     if(nextloc.x===-1){
-        goalDir = nav.getDir(loc, destination);
-        let tryDir = 0;
-        while (!nav.isPassable(nav.applyDir(loc, goalDir), fullMap, robotMap) && tryDir < 8) {
-            goalDir = nav.rotate(goalDir, 1);
-            tryDir++;
-        }
+        // while (!nav.isPassable(nav.applyDir(loc, goalDir), fullMap, robotMap) && tryDir < 8) {
+        //     goalDir = nav.rotate(goalDir, 1);
+        //     tryDir++;
+        // }
         let current = {
-            x: goalDir.x,
-            y: goalDir.y,
+            x: loc.x,
+            y: loc.y,
             nopath: 1
         };
+        const mapLen = fullMap.length;
+
+        for (let i = -1; i <= 1; i++) {
+            for (let j = -1; j <= 1; j++) {
+                // throw node.x;
+                let a = loc.x + i;
+                let b = loc.y + j;
+                if (i * i + j * j > radius) continue;
+                if (a >= mapLen || a < 0 || b >= mapLen || b < 0 || robotMap[b][a] > 0 || !fullMap[b][a]) {
+                    continue;
+                }
+                current.x=a;
+                current.y=b;
+            }
+        }    
         return current;
     }
     let temp = nav.getDir(loc,nextloc,fullMap,robotMap);
     let current = {
         x: temp.x,
-        y: temp.y,
+        y: temp.y,  
         nopath: 0
     };
     return current;
@@ -269,7 +282,7 @@ nav.getClosestResourceCoordinate = (loc,visiblerobots,resourceList,fuel) =>{
         if(fuel > fuelthreshold){
             probFuel=0.5; probKarbonite=0.5;
             if(nav.sqDist(loc,currentFuel)<nav.sqDist(loc,currentKarbonite)) probFuel=0.8;
-            else probFuel=0.2;
+            else probFuel=0.2;  
         }
         else{
             probFuel=0.8; probKarbonite=0.2;

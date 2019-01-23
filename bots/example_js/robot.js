@@ -66,6 +66,7 @@ class MyRobot extends BCAbstractRobot {
             this.castle_talk(msg);
         }
         else {
+            radius*=radius;
             this.signal(msg, radius);
         }
     }
@@ -77,6 +78,7 @@ class MyRobot extends BCAbstractRobot {
             let r = sensed[i]
             if (r.team == this.me.team && r.unit == SPECS.CASTLE) {
                 signal = r.signal
+                break;
             }
         }
         if (signal != -1) {
@@ -280,9 +282,6 @@ class MyRobot extends BCAbstractRobot {
         var target_x = this.targetAttack.x
         var target_y = this.targetAttack.y
 
-        this.log("I am here: " + this.me.x + " " + this.me.y)
-        this.log("I am going here: " + target_x + " " + target_y)
-
         // see if something can be attacked from current location
         var visible = this.getVisibleRobots()
         var self = this
@@ -335,6 +334,9 @@ class MyRobot extends BCAbstractRobot {
         if (target_x == -1 || target_y == -1) {
             return;
         }
+
+        this.log("I am here: " + this.me.x + " " + this.me.y)
+        this.log("I am going here: " + target_x + " " + target_y)
         const choice = nav.goto(
             this.me,
             destination,
@@ -444,7 +446,7 @@ class MyRobot extends BCAbstractRobot {
         this.log("symmetry type is: " + this.mapSymmetryType)
         this.getMyResourceCoordinateList()
         this.log("RESOURCE LIST --- " + this.resourceCoordinateList)
-        if (this.me.unit === SPECS.PROPHET) {
+        if (false) {
             this.log("PROF");
             if(this.targetAttack.x != -1 && this.targetAttack.y != -1){
                 return this.attack1();
@@ -608,7 +610,7 @@ class MyRobot extends BCAbstractRobot {
             this.log("CASTLE");
 
             if (this.step === 0) {
-                this.attacktrigger = Math.floor(Math.random() * 75) + 75
+                this.attacktrigger = Math.floor(Math.random() * 10) + 20
                 this.getMapSymmetry()
                 if (this.mapSymmetryType === 1) {
                     // symmetry along x
@@ -760,7 +762,7 @@ class MyRobot extends BCAbstractRobot {
             }
 
         }
-        else if(this.me.unit === SPECS.CRUSADER){
+        else if(this.me.unit === SPECS.CRUSADER || this.me.unit === SPECS.PREACHER || this.me.unit === SPECS.PROPHET){
             // if (this.targetAttack.x != -1 && this.targetAttack.y != -1) {
                 return this.attack1();
             // }
