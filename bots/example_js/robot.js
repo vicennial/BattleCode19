@@ -299,7 +299,13 @@ class MyRobot extends BCAbstractRobot {
         if (attackable.length > 0) {
             this.log("attacking")
             // attack first robot
-            var r = attackable[0];
+            var r = attackable[0],dist=nav.sqDist(this.me,r);
+            for( let i =0; i<attackable.length; i++){
+                if(nav.sqDist(this.me,attackable[i])<dist){
+                    r=attackable[i];
+                    dist=nav.sqDist(this.me,attackable[i]);
+                }
+            }
             this.log(r);
             // throw new Error();
             this.log('attacking! ' + r + ' at loc ' + (r.x - this.me.x, r.y - this.me.y));
