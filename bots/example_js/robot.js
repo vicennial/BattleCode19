@@ -125,7 +125,7 @@ class MyRobot extends BCAbstractRobot {
                 if(i%2 != j%2){
                     continue;
                 }
-                if(this.map[i][j] == true && botMap[i][j] == false){
+                if(this.map[i][j] == true && botMap[i][j] == false && this.fuel_map[i][j] == false && this.karbonite_map[i][j] == false){
                     let dis = (this.me.x - j) ** 2 + (this.me.y - i) ** 2
                     if(dis < mnm){
                         mnm = dis
@@ -410,13 +410,16 @@ class MyRobot extends BCAbstractRobot {
                 this.castleWait--;
             }
             else{
-                if(this.karbonite < 50 && this.waitOneTurn == 1){
+                if(this.karbonite < 50 && this.waitOneTurn == 1 && this.waitedEnough < 10){
+                    this.waitedEnough++;
                     return;
                 }
+                
                 if(this.waitOneTurn){
                     this.waitOneTurn = 0;
                     return;
                 }
+                this.waitedEnough = 0
                 this.waitOneTurn = 1;
                 this.castleWait = 4;
             }
@@ -635,7 +638,7 @@ class MyRobot extends BCAbstractRobot {
             this.log("CASTLE");
             
             if (this.step === 0) {
-                this.attacktrigger = Math.floor(Math.random() * 75) + 75
+                this.attacktrigger = Math.floor(Math.random() * 200) + 300
                 this.getMapSymmetry()
                 if (this.mapSymmetryType === 1) {
                     // symmetry along x
