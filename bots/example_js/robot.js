@@ -160,7 +160,7 @@ class MyRobot extends BCAbstractRobot {
                     return pos; 
             }
         }
-        return {x:0,y:0,};
+        return nav.getClosestResourceCoordinate(loc,this.resourceCoordinateList,this.fuel,this.karbonite);
     }
     getAdjacentEmptyNotOnResource(loc) {
         let robotMap = this.getVisibleRobotMap();
@@ -390,7 +390,7 @@ class MyRobot extends BCAbstractRobot {
         if(this.me.unit == SPECS.CASTLE){
             if(step > 20 && this.hasProbUpdate == 0){
                 this.hasProbUpdate = 1;
-                this.buildBotProbability = [0.2,0.2,0.2,0.4];
+                this.buildBotProbability = [0.05,0.25,0.3,0.4];
             }
 
 
@@ -573,7 +573,7 @@ class MyRobot extends BCAbstractRobot {
                         this.destination= getRandDestination();
                     }
                     else{
-                        this.destination = nav.getClosestResourceCoordinate(this.me, this.getVisibleRobotMap(),this.resourceCoordinateList,this.fuel);
+                        this.destination = nav.getClosestResourceCoordinate(this.me, this.getVisibleRobotMap(),this.resourceCoordinateList,this.fuel,this.karbonite);
                     }
                     this.log("Giving all my resouces to:"+prevdest.x+" "+prevdest.y)
                     this.log("New destination:"+this.destination.x+" "+this.destination.y);
@@ -596,7 +596,7 @@ class MyRobot extends BCAbstractRobot {
                         break;
                     }
                     this.log("Assigning new location to mine! Old locations:"+this.destination.x+" "+this.destination.y);
-                    this.destination = nav.getClosestResourceCoordinate(this.me, this.getVisibleRobotMap(),this.resourceCoordinateList,this.fuel);  
+                    this.destination = nav.getClosestResourceCoordinate(this.me, this.getVisibleRobotMap(),this.resourceCoordinateList,this.fuel,this.karbonite);  
                     this.log("New location:"+this.destination.x+" "+this.destination.y);
                 }
                 //mine if at location
@@ -663,7 +663,7 @@ class MyRobot extends BCAbstractRobot {
             this.log("CASTLE");
             
             if (this.step === 0) {
-                this.attacktrigger = Math.floor(Math.random() * 200) + 300
+                this.attacktrigger = Math.floor(Math.random() * 200) + 200
                 this.getMapSymmetry()
                 if (this.mapSymmetryType === 1) {
                     // symmetry along x
@@ -802,10 +802,8 @@ class MyRobot extends BCAbstractRobot {
         else{
             this.log("CHURCH");
             {
-                if (step > 20 && this.hasProbUpdate == 0) {
                     this.hasProbUpdate = 1;
-                    this.buildBotProbability = [0.1, 0.2, 0.3, 0.4];
-                }
+                    this.buildBotProbability = [0.05, 0.25, 0.3, 0.4];
 
                 if (this.castleWait > 0) {
                     this.castleWait--;
