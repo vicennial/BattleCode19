@@ -196,8 +196,9 @@ nav.goto = (loc, destination, fullMap, robotMap, radius) => {
                 if (a >= mapLen || a < 0 || b >= mapLen || b < 0 || robotMap[b][a] > 0 || !fullMap[b][a]) {
                     continue;
                 }
-                current.x=a;
-                current.y=b;
+                current.x=i;
+                current.y=j;
+                break;
             }
         }    
         return current;
@@ -295,10 +296,6 @@ nav.getClosestResourceCoordinate = (loc,visiblerobots,resourceList,fuel) =>{
         return current;
 }
 nav.getClosestResourceCoordinateWithRandom = (loc, enemyResourceList) => {
-    let current = {
-        x: 0,
-        y: 0
-    };
     let arr =[];
     let len = enemyResourceList.length;
     for (let i = 0; i < len; i++) {

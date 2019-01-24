@@ -373,7 +373,7 @@ class MyRobot extends BCAbstractRobot {
         else{
             this.ttl = 0;
         }
-        if(this.ttl == 5){
+        if(this.ttl >= 5){
             choice.x = 0;
             choice.y = 0;
         }
@@ -644,6 +644,16 @@ class MyRobot extends BCAbstractRobot {
                 // this.getPassableMap(),
                 this.getVisibleRobotMap(),
                 SPECS["UNITS"][this.me.unit]["SPEED"]);
+            if(choice.nopath == 1 && this.returning){
+                this.destination=this.getAdjacentEmpty(this.actualLoc);
+                 choice = nav.goto(
+                    this.me,
+                    this.destination,
+                    this.map,
+                    // this.getPassableMap(),
+                    this.getVisibleRobotMap(),
+                    SPECS["UNITS"][this.me.unit]["SPEED"]);
+            }
             this.log("Square chosen:"+this.destination.x+this.destination.y);
             this.log("Units moved:"+choice.x+" "+choice.y);
             return this.move(choice.x, choice.y);
