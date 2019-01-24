@@ -342,15 +342,22 @@ class MyRobot extends BCAbstractRobot {
         }
         return this.move(choice.x, choice.y)
     }
-
-
-
-
-
+    
+    
+    
+    
+    
     turn() {
+        this.step++;
         this.log("Step = ==== ====== ===" + step + " " + this.step)
         if(this.me.unit == SPECS.CASTLE){
-
+            
+            let canAttack = this.attackIfVisible();
+            if (canAttack !== -1) {
+                this.log("AAAADSJLNLKJFDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDNVNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN");
+                // throw new Error();
+                return canAttack;
+            }
             if(this.myEnemyCastle.length > 0 && this.attacktrigger != -1){
                 let target = { x: this.myEnemyCastle[0], y: this.myEnemyCastle[1] }
                 if (this.step % this.attacktrigger == 0) {
@@ -426,7 +433,6 @@ class MyRobot extends BCAbstractRobot {
         // msg = this.encodeMessage(4, 2, 3)
         // this.log(msg)
         step++;
-        this.step++;
         this.setMyAttackCoordinate()
         this.log("symmetry type is: " + this.mapSymmetryType)
         this.getMyResourceCoordinateList()
@@ -593,11 +599,6 @@ class MyRobot extends BCAbstractRobot {
 
         else if (this.me.unit === SPECS.CASTLE) {
             this.log("CASTLE");
-            let canAttack = this.attackIfVisible();
-            if (canAttack !== -1) {
-                this.log("AAAADSJLNLKJFDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDNVNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN");
-                return canAttack;
-            }
             
             if (this.step === 0) {
                 this.attacktrigger = Math.floor(Math.random() * 10) + 20
