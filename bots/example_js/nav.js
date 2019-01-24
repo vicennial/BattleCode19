@@ -145,7 +145,7 @@ nav.bfsdir = (loc, destination, fullMap, robotMap, radius) => {
                         x: node.x,
                         y: node.y,
                     };  
-                    // this.log("inside bfsdir:"+node.x+" "+node.y);
+                    // 
                     // throw "inside bfsdir:" + node.x + " " + node.y;
                     return current;
                         

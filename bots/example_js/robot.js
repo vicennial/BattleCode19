@@ -40,7 +40,9 @@ class MyRobot extends BCAbstractRobot {
 
         this.hasProbUpdate = 0;
     }
-
+    log(msg){
+        
+    }
     decode(msg) {
         let decodedMsg = {
             code: null,
@@ -84,12 +86,12 @@ class MyRobot extends BCAbstractRobot {
         for (let i = 0; i < sensed.length; ++i) {
             let r = sensed[i]
             // if ((this.mapSymmetryType == 1 && this.whichSide == (r.x >= this.map.length/2))||(this.mapSymmetryType == 2 && this.whichSide == (r.y >= this.map.length/2))) {
-                // this.log("as " + r.id + " " +r.x + " " + this.decode(r.signal).x +" ********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************")
+                // 
             if (this.isRadioing(r) && r.signal_radius == 4093){
                 if(commander > r.id && this.isRadioing(r)){
                     commander = r.id;
                     signal = r.signal
-                    this.log("HEHEHE    " + signal)
+                    
                 }
                 
                 // break;
@@ -192,7 +194,7 @@ class MyRobot extends BCAbstractRobot {
         if(this.resourceCoordinateList.length > 0){
             return
         }
-        this.log("Getting Coordinate List")
+        
         if(this.mapSymmetryType === -1){
             this.getMapSymmetry();
         }
@@ -212,7 +214,7 @@ class MyRobot extends BCAbstractRobot {
                 this.whichSide = 1;
             }
         }
-        this.log("Symmetry type:"+this.mapSymmetryType);
+        
         if(this.mapSymmetryType === 1){
             // symmetry along x
             // identify which side our territory is
@@ -284,7 +286,7 @@ class MyRobot extends BCAbstractRobot {
     }
 
     getMapSymmetry(){
-        this.log("Getting map symmetry")
+        
         const len_y = this.map.length
         const len_x = this.map.length
         
@@ -324,10 +326,10 @@ class MyRobot extends BCAbstractRobot {
             return false;
         });
 
-        this.log(attackable);
+        
         let val = -1;
         if (attackable.length > 0) {
-            this.log("attacking")
+            
             // attack first robot
             var r = attackable[0],dist=nav.sqDist(this.me,r);
             for( let i =0; i<attackable.length; i++){
@@ -336,15 +338,15 @@ class MyRobot extends BCAbstractRobot {
                     dist=nav.sqDist(this.me,attackable[i]);
                 }
             }
-            this.log(r);
+            
             // throw new Error();
-            this.log('attacking! ' + r + ' at loc ' + (r.x - this.me.x, r.y - this.me.y));
+            
             val = this.attack(r.x - this.me.x, r.y - this.me.y);
         }
         return val;
     }
     attack1(){
-        this.log(this.targetAttack.x + " " + this.targetAttack.y + "   hehehehehehehe")
+        
         var target_x = this.targetAttack.x
         var target_y = this.targetAttack.y
 
@@ -357,8 +359,8 @@ class MyRobot extends BCAbstractRobot {
             return;
         }
 
-        this.log("I am here: " + this.me.x + " " + this.me.y)
-        this.log("I am going here: " + target_x + " " + target_y)
+        
+        
         const choice = nav.goto(
             this.me,
             destination,
@@ -386,7 +388,7 @@ class MyRobot extends BCAbstractRobot {
     
     turn() {
         this.step++;
-        this.log("Step = ==== ====== ===" + step + " " + this.step)
+        
         if(this.me.unit == SPECS.CASTLE){
             if(step > 20 && this.hasProbUpdate == 0){
                 this.hasProbUpdate = 1;
@@ -397,7 +399,7 @@ class MyRobot extends BCAbstractRobot {
 
             let canAttack = this.attackIfVisible();
             if (canAttack !== -1) {
-                this.log("AAAADSJLNLKJFDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDNVNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN");
+                
                 // throw new Error();
                 return canAttack;
             }
@@ -409,7 +411,7 @@ class MyRobot extends BCAbstractRobot {
                 }
                 if(this.signalAttack == 1 && this.fuel >= this.map.length){
                     this.signalAttack = 0
-                    this.log("hihi" + target.x + " " + target.y + " " + this.step + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+                    
                     // let sendAttack = this.encodeMessage(0, target.x, target.y)
                     let sendAttack = this.encodeMessage(0, target.x, target.y)
                     this.sendMessage(sendAttack, 64)
@@ -418,7 +420,7 @@ class MyRobot extends BCAbstractRobot {
             
 
             if(this.step > 0){
-                this.log("CASTLE CASTLE " + this.attacktrigger)
+                
             }
             if(this.castleWait > 0){
                 this.castleWait--;
@@ -482,49 +484,49 @@ class MyRobot extends BCAbstractRobot {
         
 
         // msg = this.encodeMessage(4, 2, 3)
-        // this.log(msg)
+        // 
         step++;
         this.getMyResourceCoordinateList()
         this.setMyAttackCoordinate()
-        this.log("symmetry type is: " + this.mapSymmetryType)
-        this.log("RESOURCE LIST --- " + this.resourceCoordinateList)
+        
+        
         if (false) {
-            this.log("PROF");
+            
             if(this.targetAttack.x != -1 && this.targetAttack.y != -1){
                 return this.attack1();
             }
             
         } else if (this.me.unit === SPECS.PILGRIM) { //PILGRIM
             //
-            this.log("PILGRIM");
+            
             // On the first turn, find out our base
             if (!this.castle) {
                 this.castle = this.getVisibleRobots()
                     .filter(robot => robot.team === this.me.team && (robot.unit === SPECS.CASTLE || robot.unit === SPECS.CHURCH))[0];
                 
             }
-            this.log("before get sym");
+            
             if (this.getMapSymmetry==-1){
                 this.getMapSymmetry();
                 this.getMyResourceCoordinateList();
             }
-            this.log("after get sym");
+            
             let getRandDestination = () =>{
                 let temp = nav.getRandomResourceCoordinates(this.resourceCoordinateList);
                 return temp;
             }
             if(!this.pilgrimResourceAssigned){
-                this.log("Pilgrim has been assigned a loc!");
+                
                 // assign it to random location
                 this.pilgrimResourceAssigned=1;
                 this.destination = getRandDestination();
-                this.log("Pilgram assigned mine location" +this.destination.x + " "+this.destination.y);
+                
                 // throw "lbuhbue";
             }
-            this.log("Robot id lmao:"+this.me.id+" "+this.pilgrimResourceAssigned+" My pos :"+this.me.x+ " "+ this.me.y + " My Dest: "+ this.destination.x +" "+this.destination.y);
+            
             //stop mining logic
             if((this.me.fuel >=100 || this.me.karbonite>=20) && this.returning==0){
-                this.log("Done mining!");
+                
                 this.returning=1;
                 // this.destination=this.castle;
                 this.destination = this.getAdjacentEmpty(this.castle);
@@ -551,8 +553,8 @@ class MyRobot extends BCAbstractRobot {
                 else{ // no church
                     if(this.fuel>=200 && this.karbonite>=50){
                         let possibleLoc=this.getAdjacentEmptyNotOnResource(this.me);
-                        this.log("Currently at:" + this.me.x + " " + this.me.y);
-                        this.log("Building at:"+possibleLoc.x+" "+possibleLoc.y);
+                        
+                        
                         if(possibleLoc.x!=-1){
                             this.destination=this.getAdjacentEmpty(churchloc);
                             this.actualLoc=churchloc;
@@ -562,10 +564,10 @@ class MyRobot extends BCAbstractRobot {
                 }
 
             }
-            // this.log("")
+            // 
             //return logic
             if(this.returning){
-                this.log("Returning!");
+                
                 if (nav.sqDist(this.me, this.actualLoc) <= 2) {
                     this.returning=0;
                     let prevdest = this.actualLoc;
@@ -575,15 +577,15 @@ class MyRobot extends BCAbstractRobot {
                     else{
                         this.destination = nav.getClosestResourceCoordinate(this.me, this.getVisibleRobotMap(),this.resourceCoordinateList,this.fuel,this.karbonite);
                     }
-                    this.log("Giving all my resouces to:"+prevdest.x+" "+prevdest.y)
-                    this.log("New destination:"+this.destination.x+" "+this.destination.y);
+                    
+                    
                     return this.give(
                         prevdest.x - this.me.x,
                         prevdest.y - this.me.y,
                         this.me.karbonite,
                         this.me.fuel);
                 }
-                this.log("Leaving returning");
+                
             }
             else{
                 //assign random locations if current location is getting mined
@@ -595,9 +597,9 @@ class MyRobot extends BCAbstractRobot {
                     if(visMap[this.destination.y][this.destination.x] == 0){
                         break;
                     }
-                    this.log("Assigning new location to mine! Old locations:"+this.destination.x+" "+this.destination.y);
+                    
                     this.destination = nav.getClosestResourceCoordinate(this.me, this.getVisibleRobotMap(),this.resourceCoordinateList,this.fuel,this.karbonite);  
-                    this.log("New location:"+this.destination.x+" "+this.destination.y);
+                    
                 }
                 //mine if at location
 
@@ -623,20 +625,20 @@ class MyRobot extends BCAbstractRobot {
                     else { // no church
                         if (this.fuel >= 200 && this.karbonite >= 50) {
                             let possibleLoc = this.getAdjacentEmptyNotOnResource(this.me);
-                            this.log("Currently at:" + this.me.x + " " + this.me.y);
-                            this.log("Building at:" + possibleLoc.x + " " + possibleLoc.y);
+                            
+                            
                             if (possibleLoc.x != -1) {
                                 return this.buildUnit(SPECS.CHURCH, possibleLoc.x - this.me.x, possibleLoc.y - this.me.y);
                             }
                         }
                     }
-                    this.log("Mining at position:"+this.destination.x + " "+this.destination.y);
+                    
                     return this.mine();
                 }
 
             }
             // If we have nothing else to do, move to our destination.
-            this.log(this.me.x + ' '+this.me.y + ' ' +this.destination.x+ ' ' +this.destination.y);
+            
             const choice = nav.goto(
                 this.me,
                 this.destination,
@@ -654,13 +656,13 @@ class MyRobot extends BCAbstractRobot {
                     this.getVisibleRobotMap(),
                     SPECS["UNITS"][this.me.unit]["SPEED"]);
             }
-            this.log("Square chosen:"+this.destination.x+this.destination.y);
-            this.log("Units moved:"+choice.x+" "+choice.y);
+            
+            
             return this.move(choice.x, choice.y);
         }
 
         else if (this.me.unit === SPECS.CASTLE) {
-            this.log("CASTLE");
+            
             
             if (this.step === 0) {
                 this.attacktrigger = Math.floor(Math.random() * 200) + 200
@@ -714,7 +716,7 @@ class MyRobot extends BCAbstractRobot {
                 return false;
             });
 
-            this.log(adjacentBots)
+            
 
             let availableBuildLocations = availablePassableNeighbours.filter((r) => {
                 for (let i = 0; i < adjacentBots.length; ++i) {
@@ -727,7 +729,7 @@ class MyRobot extends BCAbstractRobot {
 
 
             if (availableBuildLocations.length === 0) {
-                this.log("No location to build a bot ... ");
+                
                 return;
             }
 
@@ -735,7 +737,7 @@ class MyRobot extends BCAbstractRobot {
             const build_x = availableBuildLocations[choose_loc][0] - this.me.x
             const build_y = availableBuildLocations[choose_loc][1] - this.me.y
 
-            this.log("Build Location is:  " + availableBuildLocations[choose_loc][0] + ',' + availableBuildLocations[choose_loc][1])
+            
 
             const token = Math.random()
 
@@ -746,9 +748,9 @@ class MyRobot extends BCAbstractRobot {
 
             // CHANGE....
             // checkPilgrim=1;
-            this.log("token is " + token + ' ' + checkPilgrim + ' ' + checkPreacher)
-            this.log("KARBONITE = " + this.karbonite)
-            this.log("fuel = " + this.fuel)
+            
+            
+            
             // if(this.karbonite<90) return;
             if (token < checkPilgrim) {
                 // create Pilgrim
@@ -756,9 +758,9 @@ class MyRobot extends BCAbstractRobot {
                 const required_karbonite = SPECS['UNITS'][SPECS['PILGRIM']]['CONSTRUCTION_KARBONITE']
                 const required_fuel = SPECS['UNITS'][SPECS['PILGRIM']]['CONSTRUCTION_FUEL']
 
-                this.log(required_karbonite + ' ' + required_fuel)
+                
                 if (this.karbonite >= required_karbonite && this.fuel >= required_fuel) {
-                    this.log('building a pilgrim at ' + (this.me.x + build_x) + ',' + (this.me.y + build_y));
+                    
                     return this.buildUnit(SPECS.PILGRIM, build_x, build_y);
                 }
             }
@@ -766,9 +768,9 @@ class MyRobot extends BCAbstractRobot {
                 // create Crusader
                 const required_karbonite = SPECS['UNITS'][SPECS['CRUSADER']]['CONSTRUCTION_KARBONITE']
                 const required_fuel = SPECS['UNITS'][SPECS['CRUSADER']]['CONSTRUCTION_FUEL']
-                this.log(required_karbonite + ' ' + required_fuel)
+                
                 if (this.karbonite >= required_karbonite && this.fuel >= required_fuel) {
-                    this.log('building a crusader at ' + (this.me.x + build_x) + ',' + (this.me.y + build_y));
+                    
                     return this.buildUnit(SPECS.CRUSADER, build_x, build_y);
                 }
             }
@@ -776,9 +778,9 @@ class MyRobot extends BCAbstractRobot {
                 // create Pilgrim
                 const required_karbonite = SPECS['UNITS'][SPECS['PROPHET']]['CONSTRUCTION_KARBONITE']
                 const required_fuel = SPECS['UNITS'][SPECS['PROPHET']]['CONSTRUCTION_FUEL']
-                this.log(required_karbonite + ' ' + required_fuel)
+                
                 if (this.karbonite >= required_karbonite && this.fuel >= required_fuel) {
-                    this.log('building a PROPHET at ' + (this.me.x + build_x) + ',' + (this.me.y + build_y));
+                    
                     return this.buildUnit(SPECS.PROPHET, build_x, build_y);
                 }
             }
@@ -786,9 +788,9 @@ class MyRobot extends BCAbstractRobot {
                 // create Pilgrim
                 const required_karbonite = SPECS['UNITS'][SPECS['PREACHER']]['CONSTRUCTION_KARBONITE']
                 const required_fuel = SPECS['UNITS'][SPECS['PREACHER']]['CONSTRUCTION_FUEL']
-                this.log(required_karbonite + ' ' + required_fuel)
+                
                 if (this.karbonite >= required_karbonite && this.fuel >= required_fuel) {
-                    this.log('building a PREACHER at ' + (this.me.x + build_x) + ',' + (this.me.y + build_y));
+                    
                     return this.buildUnit(SPECS.PREACHER, build_x, build_y);
                 }
             }
@@ -800,7 +802,7 @@ class MyRobot extends BCAbstractRobot {
             // }
         }
         else{
-            this.log("CHURCH");
+            
             {
                     this.hasProbUpdate = 1;
                     this.buildBotProbability = [0.05, 0.25, 0.3, 0.4];
@@ -859,7 +861,7 @@ class MyRobot extends BCAbstractRobot {
                 return false;
             });
 
-            this.log(adjacentBots)
+            
 
             let availableBuildLocations = availablePassableNeighbours.filter((r) => {
                 for (let i = 0; i < adjacentBots.length; ++i) {
@@ -872,7 +874,7 @@ class MyRobot extends BCAbstractRobot {
 
 
             if (availableBuildLocations.length === 0) {
-                this.log("No location to build a bot ... ");
+                
                 return;
             }
 
@@ -880,7 +882,7 @@ class MyRobot extends BCAbstractRobot {
             const build_x = availableBuildLocations[choose_loc][0] - this.me.x
             const build_y = availableBuildLocations[choose_loc][1] - this.me.y
 
-            this.log("Build Location is:  " + availableBuildLocations[choose_loc][0] + ',' + availableBuildLocations[choose_loc][1])
+            
 
             const token = Math.random()
 
@@ -891,9 +893,9 @@ class MyRobot extends BCAbstractRobot {
 
             // CHANGE....
             // checkPilgrim=1;
-            this.log("token is " + token + ' ' + checkPilgrim + ' ' + checkPreacher)
-            this.log("KARBONITE = " + this.karbonite)
-            this.log("fuel = " + this.fuel)
+            
+            
+            
             // if(this.karbonite<90) return;
             if (token < checkPilgrim) {
                 // create Pilgrim
@@ -901,9 +903,9 @@ class MyRobot extends BCAbstractRobot {
                 const required_karbonite = SPECS['UNITS'][SPECS['PILGRIM']]['CONSTRUCTION_KARBONITE']
                 const required_fuel = SPECS['UNITS'][SPECS['PILGRIM']]['CONSTRUCTION_FUEL']
 
-                this.log(required_karbonite + ' ' + required_fuel)
+                
                 if (this.karbonite >= required_karbonite && this.fuel >= required_fuel) {
-                    this.log('building a pilgrim at ' + (this.me.x + build_x) + ',' + (this.me.y + build_y));
+                    
                     return this.buildUnit(SPECS.PILGRIM, build_x, build_y);
                 }
             }
@@ -911,9 +913,9 @@ class MyRobot extends BCAbstractRobot {
                 // create Crusader
                 const required_karbonite = SPECS['UNITS'][SPECS['CRUSADER']]['CONSTRUCTION_KARBONITE']
                 const required_fuel = SPECS['UNITS'][SPECS['CRUSADER']]['CONSTRUCTION_FUEL']
-                this.log(required_karbonite + ' ' + required_fuel)
+                
                 if (this.karbonite >= required_karbonite && this.fuel >= required_fuel) {
-                    this.log('building a crusader at ' + (this.me.x + build_x) + ',' + (this.me.y + build_y));
+                    
                     return this.buildUnit(SPECS.CRUSADER, build_x, build_y);
                 }
             }
@@ -921,9 +923,9 @@ class MyRobot extends BCAbstractRobot {
                 // create Pilgrim
                 const required_karbonite = SPECS['UNITS'][SPECS['PROPHET']]['CONSTRUCTION_KARBONITE']
                 const required_fuel = SPECS['UNITS'][SPECS['PROPHET']]['CONSTRUCTION_FUEL']
-                this.log(required_karbonite + ' ' + required_fuel)
+                
                 if (this.karbonite >= required_karbonite && this.fuel >= required_fuel) {
-                    this.log('building a PROPHET at ' + (this.me.x + build_x) + ',' + (this.me.y + build_y));
+                    
                     return this.buildUnit(SPECS.PROPHET, build_x, build_y);
                 }
             }
@@ -931,9 +933,9 @@ class MyRobot extends BCAbstractRobot {
                 // create Pilgrim
                 const required_karbonite = SPECS['UNITS'][SPECS['PREACHER']]['CONSTRUCTION_KARBONITE']
                 const required_fuel = SPECS['UNITS'][SPECS['PREACHER']]['CONSTRUCTION_FUEL']
-                this.log(required_karbonite + ' ' + required_fuel)
+                
                 if (this.karbonite >= required_karbonite && this.fuel >= required_fuel) {
-                    this.log('building a PREACHER at ' + (this.me.x + build_x) + ',' + (this.me.y + build_y));
+                    
                     return this.buildUnit(SPECS.PREACHER, build_x, build_y);
                 }
             }
