@@ -277,11 +277,7 @@ class MyRobot extends BCAbstractRobot {
         // do something with buildBotProbability
 
     }
-
-    attack1(){
-        var target_x = this.targetAttack.x
-        var target_y = this.targetAttack.y
-
+    attackIfVisible(){
         // see if something can be attacked from current location
         var visible = this.getVisibleRobots()
         var self = this
@@ -298,29 +294,8 @@ class MyRobot extends BCAbstractRobot {
             return false;
         });
 
-        const attacking = visible.filter((r) => {
-            if (r.team === this.me.team) {
-                return false;
-            }
-
-            if (nav.sqDist(r, this.me) <= SPECS.UNITS[this.me.unit].ATTACK_RADIUS[0]) {
-                return true;
-            } else {
-                return false;
-            }
-        });
-
-        // if (attacking.length > 0) {
-        //     this.log("getting attacked!")
-        //     const attacker = attacking[0];
-        //     const dir = nav.getDir(this.me, attacker);
-        //     const otherDir = {
-        //         x: -dir.x,
-        //         y: -dir.y,
-        //     };
-        //     return this.move(otherDir.x, otherDir.y);
-        // }
         this.log(attackable);
+        let val = -1;
         if (attackable.length > 0) {
             this.log("attacking")
             // attack first robot
@@ -328,7 +303,17 @@ class MyRobot extends BCAbstractRobot {
             this.log(r);
             // throw new Error();
             this.log('attacking! ' + r + ' at loc ' + (r.x - this.me.x, r.y - this.me.y));
-            return this.attack(r.x - this.me.x, r.y - this.me.y);
+            val = this.attack(r.x - this.me.x, r.y - this.me.y);
+        }
+        return val;
+    }
+    attack1(){
+        var target_x = this.targetAttack.x
+        var target_y = this.targetAttack.y
+
+        let canAttack = this.attackIfVisible();
+        if(canAttack !== -1){
+            return canAttack;
         }
         let destination = { x: target_x, y: target_y, }
         if (target_x == -1 || target_y == -1) {
@@ -608,7 +593,12 @@ class MyRobot extends BCAbstractRobot {
 
         else if (this.me.unit === SPECS.CASTLE) {
             this.log("CASTLE");
-
+            let canAttack = this.attackIfVisible();
+            if (canAttack !== -1) {
+                this.log("AAAADSJLNLKJFDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDNVNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN");
+                return canAttack;
+            }
+            
             if (this.step === 0) {
                 this.attacktrigger = Math.floor(Math.random() * 10) + 20
                 this.getMapSymmetry()
@@ -624,29 +614,6 @@ class MyRobot extends BCAbstractRobot {
                 }
             }
 
-            // let target = nav.getClosestResourceCoordinateWithRandom(this.me, this.enemyResourceCoordinateList);
-            
-
-            // const visible = this.getVisibleRobots();
-            // throw "NIBBER: "+target.x+" "+target.y;
-
-            const visible = this.getVisibleRobots();
-            // const messagingRobots = visible.filter(robot => {
-            //     return robot.castle_talk;
-            // });
-
-            // for (let i = 0; i < messagingRobots.length; i++) {
-            //     const robot = messagingRobots[i];
-            //     if (!this.pendingRecievedMessages[robot.id]) {
-            //         this.pendingRecievedMessages[robot.id] = robot.castle_talk;
-            //     } else {
-            //         this.enemyCastles.push({
-            //             x: this.pendingRecievedMessages[robot.id],
-            //             y: robot.castle_talk,
-            //         });
-            //         this.pendingRecievedMessages[robot.id] = null;
-            //     }
-            // }
 
             const probabilityUpdateRequired = false
             //
