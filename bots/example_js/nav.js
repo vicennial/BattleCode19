@@ -255,7 +255,7 @@ nav.getRandomResourceCoordinates = (resourceList) =>{
     return destination;        
 }
 let fuelthreshold = 100, karbonitethreshold = 0;
-nav.getClosestResourceCoordinate = (loc,visiblerobots,resourceList,fuel,karbonite) =>{
+nav.getClosestResourceCoordinate = (loc,visiblerobots,resourceList,fuel,karbonite,step) =>{
         let currentFuel={
             x:500,
             y:500
@@ -286,7 +286,7 @@ nav.getClosestResourceCoordinate = (loc,visiblerobots,resourceList,fuel,karbonit
             }
             else{
                 probFuel=0.5; probKarbonite=0.5;
-                if(nav.sqDist(loc,currentFuel)<nav.sqDist(loc,currentKarbonite)) probFuel=0.8;
+                if(step>150 || nav.sqDist(loc,currentFuel)<nav.sqDist(loc,currentKarbonite)) probFuel=0.8;
                 else probFuel=0.2;  
 
             }
