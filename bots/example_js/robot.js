@@ -15,6 +15,7 @@ class MyRobot extends BCAbstractRobot {
 
         this.mapSymmetryType = -1 // 1 -> horizontal symmetry (X), 2 -> vertical (Y)
         this.resourceCoordinateList = [] // [[x, y, type = 0 if fuel, 1 if karbonite]....]
+        this.whichSide = -1
 
         this.myEnemyCastle = [] // X, Y
         this.attackStatusFlag = -1
@@ -33,13 +34,16 @@ class MyRobot extends BCAbstractRobot {
 
         this.attacktrigger = -1
         this.step = -1
+
+        this.waitedEnough = 0
+        this.signalAttack = 0
     }
 
     decode(msg) {
         let decodedMsg = {
             code: null,
-            x: null,
-            y: null,
+            x: -1,
+            y: -1,
         };
         if (msg & 1) { //attack
             decodedMsg.code = msg & 14;
@@ -66,22 +70,30 @@ class MyRobot extends BCAbstractRobot {
             this.castle_talk(msg);
         }
         else {
-            radius*=radius;
-            this.signal(msg, radius);
+            radius = this.map.length * this.map.length
+            this.signal(msg, 4093);
         }
     }
 
     setMyAttackCoordinate() {
-        let signal = -1
+        let signal = -100
         let sensed = this.getVisibleRobots()
+        let commander = 100000
         for (let i = 0; i < sensed.length; ++i) {
             let r = sensed[i]
-            if (r.team == this.me.team && r.unit == SPECS.CASTLE) {
-                signal = r.signal
-                break;
+            // if ((this.mapSymmetryType == 1 && this.whichSide == (r.x >= this.map.length/2))||(this.mapSymmetryType == 2 && this.whichSide == (r.y >= this.map.length/2))) {
+                // this.log("as " + r.id + " " +r.x + " " + this.decode(r.signal).x +" ********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************")
+            if (this.isRadioing(r) && r.signal_radius == 4093){
+                if(commander > r.id && this.isRadioing(r)){
+                    commander = r.id;
+                    signal = r.signal
+                    this.log("HEHEHE    " + signal)
+                }
+                
+                // break;
             }
         }
-        if (signal != -1) {
+        if (signal != -100) {
             this.targetAttack = this.decode(signal)
         }
     }
@@ -181,6 +193,22 @@ class MyRobot extends BCAbstractRobot {
         this.log("Getting Coordinate List")
         if(this.mapSymmetryType === -1){
             this.getMapSymmetry();
+        }
+        if(this.mapSymmetryType == 1){
+            if(this.me.x < this.map.length/2){
+                this.whichSide = 0;
+            }
+            else{
+                this.whichSide = 1;
+            }
+        }
+        else{
+            if(this.me.y < this.map.length/2){
+                this.whichSide = 0;
+            }
+            else{
+                this.whichSide = 1;
+            }
         }
         this.log("Symmetry type:"+this.mapSymmetryType);
         if(this.mapSymmetryType === 1){
@@ -308,6 +336,7 @@ class MyRobot extends BCAbstractRobot {
         return val;
     }
     attack1(){
+        this.log(this.targetAttack.x + " " + this.targetAttack.y + "   hehehehehehehe")
         var target_x = this.targetAttack.x
         var target_y = this.targetAttack.y
 
@@ -361,6 +390,11 @@ class MyRobot extends BCAbstractRobot {
             if(this.myEnemyCastle.length > 0 && this.attacktrigger != -1){
                 let target = { x: this.myEnemyCastle[0], y: this.myEnemyCastle[1] }
                 if (this.step % this.attacktrigger == 0) {
+                    this.signalAttack = 1
+                    
+                }
+                if(this.signalAttack == 1 && this.fuel >= this.map.length){
+                    this.signalAttack = 0
                     this.log("hihi" + target.x + " " + target.y + " " + this.step + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
                     // let sendAttack = this.encodeMessage(0, target.x, target.y)
                     let sendAttack = this.encodeMessage(0, target.x, target.y)
@@ -433,9 +467,9 @@ class MyRobot extends BCAbstractRobot {
         // msg = this.encodeMessage(4, 2, 3)
         // this.log(msg)
         step++;
+        this.getMyResourceCoordinateList()
         this.setMyAttackCoordinate()
         this.log("symmetry type is: " + this.mapSymmetryType)
-        this.getMyResourceCoordinateList()
         this.log("RESOURCE LIST --- " + this.resourceCoordinateList)
         if (false) {
             this.log("PROF");
@@ -601,7 +635,7 @@ class MyRobot extends BCAbstractRobot {
             this.log("CASTLE");
             
             if (this.step === 0) {
-                this.attacktrigger = Math.floor(Math.random() * 10) + 20
+                this.attacktrigger = Math.floor(Math.random() * 75) + 75
                 this.getMapSymmetry()
                 if (this.mapSymmetryType === 1) {
                     // symmetry along x
@@ -635,8 +669,10 @@ class MyRobot extends BCAbstractRobot {
                     if (i === 0 && j === 0) {   
                         continue;
                     }
-                    if (this.map[loc_y + j][loc_x + i] === true) {
-                        availablePassableNeighbours.push([loc_x + i, loc_y + j])
+                    if (loc_x + i >= 0 && loc_x + i < this.map.length && loc_y + j >= 0 && loc_y + j < this.map.length) {
+                        if (this.map[loc_y + j][loc_x + i] === true) {
+                            availablePassableNeighbours.push([loc_x + i, loc_y + j])
+                        }
                     }
                 }
             }
