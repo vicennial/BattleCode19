@@ -10,7 +10,7 @@ class MyRobot extends BCAbstractRobot {
         this.pendingRecievedMessages = {};
         this.enemyCastles = [];
         // 
-        this.buildBotProbability = [0.4, 0.2, 0.3, 0.1]
+        this.buildBotProbability = [0.5, 0.5, 0.0, 0.0]
         this.availableBuildLocations = []
 
         this.mapSymmetryType = -1 // 1 -> horizontal symmetry (X), 2 -> vertical (Y)
@@ -37,6 +37,8 @@ class MyRobot extends BCAbstractRobot {
 
         this.waitedEnough = 0
         this.signalAttack = 0
+
+        this.hasProbUpdate = 0;
     }
 
     decode(msg) {
@@ -386,7 +388,13 @@ class MyRobot extends BCAbstractRobot {
         this.step++;
         this.log("Step = ==== ====== ===" + step + " " + this.step)
         if(this.me.unit == SPECS.CASTLE){
-            
+            if(step > 20 && this.hasProbUpdate == 0){
+                this.hasProbUpdate = 1;
+                this.buildBotProbability = [0.2,0.2,0.2,0.4];
+            }
+
+
+
             let canAttack = this.attackIfVisible();
             if (canAttack !== -1) {
                 this.log("AAAADSJLNLKJFDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDNVNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN");
@@ -489,7 +497,8 @@ class MyRobot extends BCAbstractRobot {
             // On the first turn, find out our base
             if (!this.castle) {
                 this.castle = this.getVisibleRobots()
-                    .filter(robot => robot.team === this.me.team && robot.unit === SPECS.CASTLE)[0];
+                    .filter(robot => robot.team === this.me.team && (robot.unit === SPECS.CASTLE || robot.unit === SPECS.CHURCH))[0];
+                
             }
             this.log("before get sym");
             if (this.getMapSymmetry==-1){
@@ -641,7 +650,7 @@ class MyRobot extends BCAbstractRobot {
             this.log("CASTLE");
             
             if (this.step === 0) {
-                this.attacktrigger = Math.floor(Math.random() * 75) + 75
+                this.attacktrigger = Math.floor(Math.random() * 200) + 300
                 this.getMapSymmetry()
                 if (this.mapSymmetryType === 1) {
                     // symmetry along x
@@ -778,10 +787,147 @@ class MyRobot extends BCAbstractRobot {
             // }
         }
         else{
-            // if (this.targetAttack.x != -1 && this.targetAttack.y != -1) {
-            //     return this.attack1();
-            // }
-            // return this.attack1();
+            this.log("CHURCH");
+            {
+                if (step > 20 && this.hasProbUpdate == 0) {
+                    this.hasProbUpdate = 1;
+                    this.buildBotProbability = [0.1, 0.2, 0.3, 0.4];
+                }
+
+                if (this.castleWait > 0) {
+                    this.castleWait--;
+                }
+                else {
+                    if (this.karbonite < 50 && this.waitOneTurn == 1) {
+                        return;
+                    }
+                    if (this.waitOneTurn) {
+                        this.waitOneTurn = 0;
+                        return;
+                    }
+                    this.waitOneTurn = 1;
+                    this.castleWait = 4;
+                }
+            }
+
+
+
+            const probabilityUpdateRequired = false
+            //
+            // logic to determine whether an update is required
+            //
+
+            if (probabilityUpdateRequired) {
+                this.updateBuildProbability()
+            }
+            // castle coordinates
+            const loc_x = this.me.x
+            const loc_y = this.me.y
+
+            // determine location to build the object
+            let availablePassableNeighbours = []
+            for (let i = -1; i <= 1; ++i) {
+                for (let j = -1; j <= 1; ++j) {
+                    if (i === 0 && j === 0) {
+                        continue;
+                    }
+                    if (loc_x + i >= 0 && loc_x + i < this.map.length && loc_y + j >= 0 && loc_y + j < this.map.length) {
+                        if (this.map[loc_y + j][loc_x + i] === true) {
+                            availablePassableNeighbours.push([loc_x + i, loc_y + j])
+                        }
+                    }
+                }
+            }
+
+            // see if any of the cells being considered are already full
+            var visibleBots = this.getVisibleRobots()
+            var adjacentBots = visibleBots.filter((r) => {
+                if (Math.abs(r.x - loc_x) <= 1 && Math.abs(r.y - loc_y) <= 1) {
+                    return true;
+                }
+                return false;
+            });
+
+            this.log(adjacentBots)
+
+            let availableBuildLocations = availablePassableNeighbours.filter((r) => {
+                for (let i = 0; i < adjacentBots.length; ++i) {
+                    if (adjacentBots[i].x == r[0] && adjacentBots[i].y == r[1]) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+
+            if (availableBuildLocations.length === 0) {
+                this.log("No location to build a bot ... ");
+                return;
+            }
+
+            const choose_loc = Math.floor(Math.random() * availableBuildLocations.length)
+            const build_x = availableBuildLocations[choose_loc][0] - this.me.x
+            const build_y = availableBuildLocations[choose_loc][1] - this.me.y
+
+            this.log("Build Location is:  " + availableBuildLocations[choose_loc][0] + ',' + availableBuildLocations[choose_loc][1])
+
+            const token = Math.random()
+
+            let checkPilgrim = this.buildBotProbability[0]
+            let checkCrusader = this.buildBotProbability[0] + this.buildBotProbability[1]
+            let checkProphet = this.buildBotProbability[0] + this.buildBotProbability[1] + this.buildBotProbability[2]
+            let checkPreacher = this.buildBotProbability[0] + this.buildBotProbability[1] + this.buildBotProbability[2] + this.buildBotProbability[3]
+
+            // CHANGE....
+            // checkPilgrim=1;
+            this.log("token is " + token + ' ' + checkPilgrim + ' ' + checkPreacher)
+            this.log("KARBONITE = " + this.karbonite)
+            this.log("fuel = " + this.fuel)
+            // if(this.karbonite<90) return;
+            if (token < checkPilgrim) {
+                // create Pilgrim
+
+                const required_karbonite = SPECS['UNITS'][SPECS['PILGRIM']]['CONSTRUCTION_KARBONITE']
+                const required_fuel = SPECS['UNITS'][SPECS['PILGRIM']]['CONSTRUCTION_FUEL']
+
+                this.log(required_karbonite + ' ' + required_fuel)
+                if (this.karbonite >= required_karbonite && this.fuel >= required_fuel) {
+                    this.log('building a pilgrim at ' + (this.me.x + build_x) + ',' + (this.me.y + build_y));
+                    return this.buildUnit(SPECS.PILGRIM, build_x, build_y);
+                }
+            }
+            else if (token < checkCrusader) {
+                // create Crusader
+                const required_karbonite = SPECS['UNITS'][SPECS['CRUSADER']]['CONSTRUCTION_KARBONITE']
+                const required_fuel = SPECS['UNITS'][SPECS['CRUSADER']]['CONSTRUCTION_FUEL']
+                this.log(required_karbonite + ' ' + required_fuel)
+                if (this.karbonite >= required_karbonite && this.fuel >= required_fuel) {
+                    this.log('building a crusader at ' + (this.me.x + build_x) + ',' + (this.me.y + build_y));
+                    return this.buildUnit(SPECS.CRUSADER, build_x, build_y);
+                }
+            }
+            else if (token < checkProphet) {
+                // create Pilgrim
+                const required_karbonite = SPECS['UNITS'][SPECS['PROPHET']]['CONSTRUCTION_KARBONITE']
+                const required_fuel = SPECS['UNITS'][SPECS['PROPHET']]['CONSTRUCTION_FUEL']
+                this.log(required_karbonite + ' ' + required_fuel)
+                if (this.karbonite >= required_karbonite && this.fuel >= required_fuel) {
+                    this.log('building a PROPHET at ' + (this.me.x + build_x) + ',' + (this.me.y + build_y));
+                    return this.buildUnit(SPECS.PROPHET, build_x, build_y);
+                }
+            }
+            else {
+                // create Pilgrim
+                const required_karbonite = SPECS['UNITS'][SPECS['PREACHER']]['CONSTRUCTION_KARBONITE']
+                const required_fuel = SPECS['UNITS'][SPECS['PREACHER']]['CONSTRUCTION_FUEL']
+                this.log(required_karbonite + ' ' + required_fuel)
+                if (this.karbonite >= required_karbonite && this.fuel >= required_fuel) {
+                    this.log('building a PREACHER at ' + (this.me.x + build_x) + ',' + (this.me.y + build_y));
+                    return this.buildUnit(SPECS.PREACHER, build_x, build_y);
+                }
+            }
+
+            
         }
 
     }
