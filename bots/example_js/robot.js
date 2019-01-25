@@ -39,6 +39,8 @@ class MyRobot extends BCAbstractRobot {
         this.signalAttack = 0
 
         this.hasProbUpdate = 0;
+        this.hasRecievedAttackSignal = 0;
+
     }
 
     decode(msg) {
@@ -97,6 +99,7 @@ class MyRobot extends BCAbstractRobot {
         }
         if (signal != -100) {
             this.targetAttack = this.decode(signal)
+            this.ttl = 0;
         }
     }
 
@@ -356,7 +359,7 @@ class MyRobot extends BCAbstractRobot {
         if (target_x == -1 || target_y == -1) {
             return;
         }
-
+        this.hasRecievedAttackSignal = 1;
         this.log("I am here: " + this.me.x + " " + this.me.y)
         this.log("I am going here: " + target_x + " " + target_y)
         const choice = nav.goto(
@@ -371,12 +374,13 @@ class MyRobot extends BCAbstractRobot {
             this.ttl++;
         }
         else{
-            this.ttl = 0;
+            // this.ttl = 0;
         }
-        if(this.ttl >= 5){
+        if(this.ttl > 3){
             choice.x = 0;
             choice.y = 0;
         }
+        this.log("TTL VAL="+this.ttl);
         return this.move(choice.x, choice.y)
     }
     
@@ -439,22 +443,22 @@ class MyRobot extends BCAbstractRobot {
             }
         }
 
-        if(this.me.unit != SPECS.CHURCH && this.me.unit != SPECS.CASTLE && this.me.unit != SPECS.PILGRIM){
-            // if the unit type is not determined yet
-            if(this.isAttackType == -1){
-                // check the visible friendly units
-                var visible = this.getMyVisibleHomieBots()
-                if(visible.length < 5){
-                    this.isAttackType = 0
-                }
-                else{
-                    this.isAttackType = 1
-                } 
-            }
-        }
+        // if(this.me.unit != SPECS.CHURCH && this.me.unit != SPECS.CASTLE && this.me.unit != SPECS.PILGRIM){
+        //     // if the unit type is not determined yet
+        //     if(this.isAttackType == -1){
+        //         // check the visible friendly units
+        //         var visible = this.getMyVisibleHomieBots()
+        //         if(visible.length < 5){
+        //             this.isAttackType = 0
+        //         }
+        //         else{
+        //             this.isAttackType = 1
+        //         } 
+        //     }
+        // }
 
         // check if the unit has been assigned to its initial resting position
-        if(this.me.unit != SPECS.CHURCH && this.me.unit != SPECS.CASTLE && this.me.unit != SPECS.PILGRIM){
+        if(this.me.unit != SPECS.CHURCH && this.me.unit != SPECS.CASTLE && this.me.unit != SPECS.PILGRIM && !this.hasRecievedAttackSignal){
             if (this.assignedLoc.length == 0) {
                 this.nextValidLoc();
             }
