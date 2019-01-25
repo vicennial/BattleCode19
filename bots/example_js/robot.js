@@ -459,6 +459,60 @@ class MyRobot extends BCAbstractRobot {
                 }
             }
             
+            if (this.step === 0) {
+                this.attacktrigger = Math.floor(Math.random() * 200) + 300
+                this.getMapSymmetry()
+
+            }
+
+            
+            if(this.step > 20 && this.fuel >= this.map.length && this.loc_not_sent){
+                let msg = this.encodeMessage(0, this.me.x, this.me.y)
+                this.signal(msg, 4092)
+                this.loc_not_sent = 0
+            }
+
+            let sensed_bots = this.getVisibleRobots()
+            for(let i = 0; i < sensed_bots.length; ++i){
+                let r = sensed_bots[i]
+                if(this.isRadioing(r) && r.signal_radius == 4092){
+                    let decoded_msg = this.decode(r.signal)
+                    this.castleInfo.push([decoded_msg.x, decoded_msg.y])
+                    this.log(this.castleInfo)
+                }
+            }
+
+            this.castleInfo.sort((a, b) => {
+                if (a[0] < b[0]) {
+                    return -1;
+                }
+                if (a[0] > b[0]) {
+                    return 1;
+                }
+                if (a[1] < b[1]) {
+                    return -1;
+                }
+                if (a[1] > b[1]) {
+                    return 1;
+                }
+                return 0; // not reached
+            })
+
+            this.castleInfo.reverse()
+
+            if(this.castleInfo.length > 0){
+                if (this.mapSymmetryType === 1) {
+                    // symmetry along x
+                    var len_x = this.map.length
+                    this.myEnemyCastle = [len_x - 1 - this.castleInfo[this.castleInfo.length - 1][0], this.castleInfo[this.castleInfo.length - 1][1]]
+                }
+                else {
+                    // symmetry along y
+                    var len_y = this.map.length
+                    this.myEnemyCastle = [this.castleInfo[this.castleInfo.length - 1][0], len_y - 1 - this.castleInfo[this.castleInfo.length - 1][1]]
+                }
+            }
+            
 
            
             this.log(this.castleInfo + " abcd CASTLE INFO")
