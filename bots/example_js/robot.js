@@ -84,17 +84,22 @@ class MyRobot extends BCAbstractRobot {
         let signal = -100
         let sensed = this.getVisibleRobots()
         let commander = 100000
+
         for (let i = 0; i < sensed.length; ++i) {
             let r = sensed[i]
-            // if ((this.mapSymmetryType == 1 && this.whichSide == (r.x >= this.map.length/2))||(this.mapSymmetryType == 2 && this.whichSide == (r.y >= this.map.length/2))) {
-                // this.log("as " + r.id + " " +r.x + " " + this.decode(r.signal).x +" ********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************")
+            if (this.isRadioing(r) && r.signal_radius == 4091) { // check for a victory signal
+                this.targetAttack = {code: null, x: -1, y: -1}
+            }
+        }
+
+        for (let i = 0; i < sensed.length; ++i) {
+            let r = sensed[i]
             if (this.isRadioing(r) && r.signal_radius == 4093){
                 if(commander > r.id && this.isRadioing(r)){
                     commander = r.id;
                     signal = r.signal
                     this.log("HEHEHE    " + signal)
                 }
-                
                 // break;
             }
         }
@@ -368,7 +373,8 @@ class MyRobot extends BCAbstractRobot {
             this.map,
             // this.getPassableMap(),
             this.getVisibleRobotMap(),
-            SPECS["UNITS"][this.me.unit]["SPEED"]);
+            4);
+            // SPECS["UNITS"][this.me.unit]["SPEED"]);
         
         if(choice.nopath == 1){
             this.ttl++;
@@ -383,16 +389,20 @@ class MyRobot extends BCAbstractRobot {
         return this.move(choice.x, choice.y)
     }
     
-    // sendCastleTalk(mode){
-    //     if(mode == 0){
-    //         let signal = this.me.x 
-    //     }
-    //     else{
 
-    //     }
-    // }
     
-    
+    victorySignalReceived(){
+        let sensed = this.getVisibleRobots()
+        for (let i = 0; i < sensed.length; ++i) {
+            let r = sensed[i]
+            if (r.team == this.me.team && this.isRadioing(r) && r.signal_radius == 4091) {
+                this.log("AAAADSJLNLKJFDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDNVNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN");
+                this.log(this.castleInfo[this.castleInfo.length - 1])
+                return true
+            }
+        }
+        return false
+    }
     
     turn() {
         this.step++;
@@ -459,75 +469,19 @@ class MyRobot extends BCAbstractRobot {
                 }
             }
             
-            if (this.step === 0) {
-                this.attacktrigger = Math.floor(Math.random() * 200) + 300
-                this.getMapSymmetry()
-
-            }
+           
+           
 
             
-            if(this.step > 20 && this.fuel >= this.map.length && this.loc_not_sent){
-                let msg = this.encodeMessage(0, this.me.x, this.me.y)
-                this.signal(msg, 4092)
-                this.loc_not_sent = 0
-            }
 
-            let sensed_bots = this.getVisibleRobots()
-            for(let i = 0; i < sensed_bots.length; ++i){
-                let r = sensed_bots[i]
-                if(this.isRadioing(r) && r.signal_radius == 4092){
-                    let decoded_msg = this.decode(r.signal)
-                    this.castleInfo.push([decoded_msg.x, decoded_msg.y])
-                    this.log(this.castleInfo)
-                }
-            }
-
-            this.castleInfo.sort((a, b) => {
-                if (a[0] < b[0]) {
-                    return -1;
-                }
-                if (a[0] > b[0]) {
-                    return 1;
-                }
-                if (a[1] < b[1]) {
-                    return -1;
-                }
-                if (a[1] > b[1]) {
-                    return 1;
-                }
-                return 0; // not reached
-            })
-
-            this.castleInfo.reverse()
-
-            if(this.castleInfo.length > 0){
-                if (this.mapSymmetryType === 1) {
-                    // symmetry along x
-                    var len_x = this.map.length
-                    this.myEnemyCastle = [len_x - 1 - this.castleInfo[this.castleInfo.length - 1][0], this.castleInfo[this.castleInfo.length - 1][1]]
-                }
-                else {
-                    // symmetry along y
-                    var len_y = this.map.length
-                    this.myEnemyCastle = [this.castleInfo[this.castleInfo.length - 1][0], len_y - 1 - this.castleInfo[this.castleInfo.length - 1][1]]
-                }
-            }
-            
 
            
             this.log(this.castleInfo + " abcd CASTLE INFO")
-            let sensed = this.getVisibleRobots()
-            for(let i = 0; i < sensed.length; ++i){
-                let r = sensed[i]
-                if(r.team == this.me.team && this.isRadioing(r) && r.signal_radius == 4091){
-                    this.log("AAAADSJLNLKJFDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDNVNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN");
-                    this.log(this.castleInfo[this.castleInfo.length-1])
-                    
 
-                    this.castleInfo.pop()
-                    break
-                }
+            if(this.victorySignalReceived()){
+                this.castleInfo.pop()
             }
+
 
             let canAttack = this.attackIfVisible();
             if (canAttack !== -1) {
@@ -541,7 +495,8 @@ class MyRobot extends BCAbstractRobot {
                     this.signalAttack = 1
                     
                 }
-                if(this.signalAttack == 1 && this.fuel >= this.map.length){
+                // if (this.signalAttack == 1 && this.fuel >= this.map.length) {
+                if(this.signalAttack == 1 && this.fuel >= 8000){
                     this.signalAttack = 0
                     this.log("hihi" + target.x + " " + target.y + " " + this.step + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
                     // let sendAttack = this.encodeMessage(0, target.x, target.y)

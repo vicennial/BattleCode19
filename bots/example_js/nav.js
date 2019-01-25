@@ -285,14 +285,17 @@ nav.getClosestResourceCoordinate = (loc,visiblerobots,resourceList,fuel,karbonit
                 probFuel=0.2;
             }
             else{
-                probFuel=0.5; probKarbonite=0.5;
-                if(step>150 || nav.sqDist(loc,currentFuel)<nav.sqDist(loc,currentKarbonite)) probFuel=0.8;
+                // probFuel=0.5; probKar/bonite=0.5;
+                if(step >250){
+                    probFuel=0.95;
+                }
+                else if(nav.sqDist(loc,currentFuel)<nav.sqDist(loc,currentKarbonite)) probFuel=0.8;
                 else probFuel=0.2;  
 
             }
         }
         else{
-            probFuel=0.8; probKarbonite=0.2;
+            probFuel=0.95; probKarbonite=0.05;
         }
         const randval=Math.random();
         if(randval<probFuel){
